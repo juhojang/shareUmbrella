@@ -52,24 +52,47 @@ class _MyHomePageState extends State<MyHomePage> {
               '${viewModel.isLogined}',
               style: Theme.of(context).textTheme.headline4,
             ),
-            ElevatedButton(
-              onPressed: ()async{
+            InkWell(
+              onTap: ()async{
                 await viewModel.login();
                 setState(() {
-
                 });
               },
-              child: const Text('Login'),
+              child: Container(
+                width: 200,
+                height: 80,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage("assets/kakao_login_medium_narrow.png")
+                  )
+                ),
+              ),
             ),
-            ElevatedButton(
-              onPressed: ()async{
+            InkWell(
+              onTap: ()async{
                 await viewModel.logout();
                 setState(() {
-
                 });
               },
-              child: const Text('Logout'),
-            ),
+              child: Container(
+                child: Center(
+                  child: Text(
+                      '로그아웃',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.black54
+                  ),),
+                ),
+                width: 180,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Colors.yellow,
+                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                    )
+                ),
+              ),
           ],
         ),
       ),
