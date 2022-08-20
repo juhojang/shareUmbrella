@@ -8,7 +8,9 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
 
-void main(){
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -17,10 +19,11 @@ void main(){
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    future: Firebase.initializeApp();
+    Firebase.initializeApp();
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -67,6 +70,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     loadInfo();
+    Firebase.initializeApp().whenComplete(() {
+      print("completed");
+      setState(() {});
+    });
   }
 
 
