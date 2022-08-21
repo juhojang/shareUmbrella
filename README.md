@@ -1,16 +1,6 @@
-# untitled37
+# 프로젝트명 shareUmbrella
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+비오는 날, 우산 안 가져와서 난처한 당신!  
+우산 같이쓰자고 비벼보세요.  
+그렇지만 꽁으로?  
+우산을 공유하는 사람은 흥정도 할 수 있습니다!  
