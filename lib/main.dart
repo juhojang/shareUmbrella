@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -7,8 +8,16 @@ import 'package:flutter/services.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-void main(){
+
+bool buttonTap=false;
+bool userbuttonTap=false;
+bool probuttonTap=false;
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -17,22 +26,13 @@ void main(){
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
-    future: Firebase.initializeApp();
+    Firebase.initializeApp();
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
@@ -42,16 +42,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -62,11 +52,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
   LocationData? locationData;
 
+  late GoogleMapController _controller;
+
+  final CameraPosition _initialPosition =
+  CameraPosition(target: LatLng( 37.56332978493992, 126.97981417179109),zoom: 17);
+
+  final List<Marker> markers = [];
+
+  addMarker(cordinate) {
+    int id = Random().nextInt(100);
+
+    setState(() {
+      if(markers.length==1)
+      {
+        markers[0]=Marker(position: cordinate, markerId: MarkerId(id.toString()));
+      }
+      else
+      {
+        markers
+            .add(Marker(position: cordinate, markerId: MarkerId(id.toString())));
+      }
+
+    });
+  }
+
 
   @override
   void initState() {
     super.initState();
     loadInfo();
+    Firebase.initializeApp().whenComplete(() {
+      print("completed");
+      setState(() {});
+    });
   }
 
 
@@ -74,90 +92,123 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String? _fingerPrint;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: Stack(
+        children: [
+          Stack(
+            children: [
+              AnimatedContainer(
+              width: buttonTap ? 1000.0 : 1000.0,
+              height: buttonTap ? 1000.0 : 1000.0,
+              color: buttonTap ? Colors.lightBlue : Colors.transparent,
+              alignment:
+              buttonTap ? Alignment.center : AlignmentDirectional.topCenter,
+              duration: const Duration(seconds: 1),
+              curve: Curves.fastOutSlowIn,
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              buttonTap?userbuttonTap?Padding(
+                padding: EdgeInsets.fromLTRB(0, 65, 0, 0),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Icon(Icons.person_outlined,color: Colors.white,size: 100,)),
+              ):
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 60, 0, 0),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Icon(Icons.umbrella_outlined,color: Colors.white,size: 100,)),
+              ):
+              Container(),
+              buttonTap?userbuttonTap?Padding(
+                padding: EdgeInsets.fromLTRB(95,80,0, 0),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Text("사용자님 환영합니다.\n도착 위치 선택하세요.",style: TextStyle(color: Colors.white,fontSize: 30),)),
+              ):Padding(
+                padding: EdgeInsets.fromLTRB(90,80,0, 0),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Text("공급자님 환영합니다.\n도착 위치를 선택하세요",style: TextStyle(color: Colors.white,fontSize: 30),)),
+              )
+                  :Padding(
+                padding: EdgeInsets.fromLTRB(0,80,0, 0),
+                child: AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Text("",style: TextStyle(color: Colors.white,fontSize: 30),)),
+              )
+            ]
+          ),
+          !buttonTap?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/Rain.gif'),fit: BoxFit.cover,height: double.infinity,))
+              :AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/Rain.gif'),fit: BoxFit.cover,height: double.infinity,)),
+          Column(
+          children: [
+            Spacer(),
+            !buttonTap?AnimatedOpacity(
+              opacity: 1,
+              duration: Duration(seconds: 1),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                child: Text("share\numbrella",style: TextStyle(fontSize: 35,fontFamily: 'Silkscreen-Regular'),),
+              ),
+            ):AnimatedOpacity(
+              opacity: 0,
+              duration: Duration(seconds: 1),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                child: Text("",style: TextStyle(fontSize: 35,fontFamily: 'Silkscreen-Regular'),),
+              ),
             ),
-            FloatingActionButton(
-              onPressed:(){
-                writeDataforUser();
-              },
-              tooltip: 'Increment',
-              child: const Icon(Icons.person_outlined),
-            ),
-            FloatingActionButton(
-              onPressed:(){
-                writeDataforProvider();
-              },
-              tooltip: 'Increment',
-              child: const Icon(Icons.people_alt_outlined),
-            ),
-            FloatingActionButton(
-              onPressed:(){
-                readData();
-              },
-              tooltip: 'Increment',
-              child: const Icon(Icons.mark_chat_read_outlined),
-            ),
-            FloatingActionButton(
-              onPressed:(){
-                deleteData();
-              },
-              tooltip: 'Increment',
-              child: const Icon(Icons.delete),
-            ),
+            Spacer(),
+            buttonTap?Container(
+              width: 500,
+              height: 500,
+              child: GoogleMap(
+                initialCameraPosition: _initialPosition,
+                mapType: MapType.normal,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                onMapCreated: (controller) {
+                  setState(() {
+                    _controller = controller;
+                  });
+                },
+                markers: markers.toSet(),
+
+                onTap: (cordinate) {
+                  _controller.animateCamera(CameraUpdate.newLatLng(cordinate));
+                  print(cordinate.longitude);
+                  print(cordinate.latitude);
+                  addMarker(cordinate);
+                },
+              ),
+            ):Container(),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  !probuttonTap?FloatingActionButton(
+                    backgroundColor: Colors.lightBlue,
+                    elevation: 0,
+                    onPressed:(){
+                      setState(() {
+                        userbuttonTap=!userbuttonTap;
+                        buttonTap=!buttonTap;
+                      });
+                    },
+                    child: !userbuttonTap?Icon(Icons.person_outlined):Icon(Icons.cancel_outlined),
+                  ):Container(),
+                  !userbuttonTap?FloatingActionButton(
+                    backgroundColor: Colors.lightBlue,
+                    elevation: 0,
+                    onPressed:(){
+                      setState(() {
+                        probuttonTap=!probuttonTap;
+                        buttonTap=!buttonTap;
+                      });
+                    },
+                    child: !probuttonTap?Icon(Icons.people_alt_outlined):Icon(Icons.cancel_outlined),
+                  ):Container(),
+
+                ],
+              ),
+
           ],
         ),
-
+        ]
       ),
+
       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
