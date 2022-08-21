@@ -57,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final CameraPosition _initialPosition =
   CameraPosition(target: LatLng( 37.56332978493992, 126.97981417179109),zoom: 17);
 
-  final List<Marker> markers = [];
+  List<Marker> markers = [];
 
   addMarker(cordinate) {
     int id = Random().nextInt(100);
@@ -128,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   :Padding(
                 padding: EdgeInsets.fromLTRB(0,80,0, 0),
                 child: AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Text("",style: TextStyle(color: Colors.white,fontSize: 30),)),
-              )
+              ),
             ]
           ),
           !buttonTap?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/Rain.gif'),fit: BoxFit.cover,height: double.infinity,))
@@ -185,6 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       setState(() {
                         userbuttonTap=!userbuttonTap;
                         buttonTap=!buttonTap;
+                        markers=[];
                       });
                     },
                     child: !userbuttonTap?Icon(Icons.person_outlined):Icon(Icons.cancel_outlined),
@@ -196,16 +197,30 @@ class _MyHomePageState extends State<MyHomePage> {
                       setState(() {
                         probuttonTap=!probuttonTap;
                         buttonTap=!buttonTap;
+                        markers=[];
                       });
                     },
-                    child: !probuttonTap?Icon(Icons.people_alt_outlined):Icon(Icons.cancel_outlined),
+                    child: !probuttonTap?Icon(Icons.umbrella_outlined):Icon(Icons.cancel_outlined),
                   ):Container(),
+
 
                 ],
               ),
 
+
           ],
         ),
+          markers.length==1?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(170,180,0, 0),
+              child: OutlinedButton( onPressed: () {userbuttonTap?writeDataforUser(markers[0].position):writeDataforProvider(markers[0].position); }, child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white)),style: OutlinedButton.styleFrom(side: BorderSide(width: 3.0,color: Colors.white)), ),
+            ),
+          ):AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(170,180,0, 0),
+              child: OutlinedButton( onPressed: () { }, child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white)),style: OutlinedButton.styleFrom(side: BorderSide(width: 3.0,color: Colors.white)), ),
+            ),
+          )
         ]
       ),
 
@@ -213,21 +228,23 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void writeDataforUser() {
+  void writeDataforUser(LatLng latLng) {
       DBRef.child(_fingerPrint!).set({
       'type':'사용자',
       'currentLocation_x': locationData?.longitude.toString(),
         'currentLocation_y': locationData?.latitude.toString(),
-        'futureLocation' : 'x,y 좌표'
+        'futureLocation_x' : latLng.longitude.toString(),
+        'futureLocation_y' : latLng.latitude.toString()
     });
   }
 
-  void writeDataforProvider() {
+  void writeDataforProvider(LatLng latLng) {
     DBRef.child(_fingerPrint!).set({
       'type':'제공자',
       'currentLocation_x': locationData?.longitude.toString(),
       'currentLocation_y': locationData?.latitude.toString(),
-      'futureLocation' : 'x,y 좌표'
+      'futureLocation_x' : latLng.longitude.toString(),
+      'futureLocation_y' : latLng.latitude.toString()
     });
   }
 
