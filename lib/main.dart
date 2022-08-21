@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 bool buttonTap=false;
@@ -50,6 +52,30 @@ class _MyHomePageState extends State<MyHomePage> {
 
   LocationData? locationData;
 
+  late GoogleMapController _controller;
+
+  final CameraPosition _initialPosition =
+  CameraPosition(target: LatLng( 37.56332978493992, 126.97981417179109),zoom: 17);
+
+  final List<Marker> markers = [];
+
+  addMarker(cordinate) {
+    int id = Random().nextInt(100);
+
+    setState(() {
+      if(markers.length==1)
+      {
+        markers[0]=Marker(position: cordinate, markerId: MarkerId(id.toString()));
+      }
+      else
+      {
+        markers
+            .add(Marker(position: cordinate, markerId: MarkerId(id.toString())));
+      }
+
+    });
+  }
+
 
   @override
   void initState() {
@@ -72,14 +98,38 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: Stack(
         children: [
-          AnimatedContainer(
-            width: buttonTap ? 1000.0 : 1000.0,
-            height: buttonTap ? 1000.0 : 1000.0,
-            color: buttonTap ? Colors.blueAccent : Colors.transparent,
-            alignment:
-            buttonTap ? Alignment.center : AlignmentDirectional.topCenter,
-            duration: const Duration(seconds: 1),
-            curve: Curves.fastOutSlowIn,
+          Stack(
+            children: [
+              AnimatedContainer(
+              width: buttonTap ? 1000.0 : 1000.0,
+              height: buttonTap ? 1000.0 : 1000.0,
+              color: buttonTap ? Colors.lightBlue : Colors.transparent,
+              alignment:
+              buttonTap ? Alignment.center : AlignmentDirectional.topCenter,
+              duration: const Duration(seconds: 1),
+              curve: Curves.fastOutSlowIn,
+            ),
+              buttonTap?userbuttonTap?Padding(
+                padding: EdgeInsets.fromLTRB(0, 65, 0, 0),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Icon(Icons.person_outlined,color: Colors.white,size: 100,)),
+              ):
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 60, 0, 0),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Icon(Icons.umbrella_outlined,color: Colors.white,size: 100,)),
+              ):
+              Container(),
+              buttonTap?userbuttonTap?Padding(
+                padding: EdgeInsets.fromLTRB(95,80,0, 0),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Text("사용자님 환영합니다.\n도착 위치 선택하세요.",style: TextStyle(color: Colors.white,fontSize: 30),)),
+              ):Padding(
+                padding: EdgeInsets.fromLTRB(90,80,0, 0),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Text("공급자님 환영합니다.\n도착 위치를 선택하세요",style: TextStyle(color: Colors.white,fontSize: 30),)),
+              )
+                  :Padding(
+                padding: EdgeInsets.fromLTRB(0,80,0, 0),
+                child: AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Text("",style: TextStyle(color: Colors.white,fontSize: 30),)),
+              )
+            ]
           ),
           !buttonTap?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/Rain.gif'),fit: BoxFit.cover,height: double.infinity,))
               :AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/Rain.gif'),fit: BoxFit.cover,height: double.infinity,)),
@@ -98,33 +148,62 @@ class _MyHomePageState extends State<MyHomePage> {
               duration: Duration(seconds: 1),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
-                child: Text("share\numbrella",style: TextStyle(fontSize: 35,fontFamily: 'Silkscreen-Regular'),),
+                child: Text("",style: TextStyle(fontSize: 35,fontFamily: 'Silkscreen-Regular'),),
               ),
             ),
             Spacer(),
+            buttonTap?Container(
+              width: 500,
+              height: 500,
+              child: GoogleMap(
+                initialCameraPosition: _initialPosition,
+                mapType: MapType.normal,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                onMapCreated: (controller) {
+                  setState(() {
+                    _controller = controller;
+                  });
+                },
+                markers: markers.toSet(),
+
+                onTap: (cordinate) {
+                  _controller.animateCamera(CameraUpdate.newLatLng(cordinate));
+                  print(cordinate.longitude);
+                  print(cordinate.latitude);
+                  addMarker(cordinate);
+                },
+              ),
+            ):Container(),
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   !probuttonTap?FloatingActionButton(
+                    backgroundColor: Colors.lightBlue,
+                    elevation: 0,
                     onPressed:(){
                       setState(() {
                         userbuttonTap=!userbuttonTap;
                         buttonTap=!buttonTap;
                       });
                     },
-                    child: const Icon(Icons.person_outlined),
+                    child: !userbuttonTap?Icon(Icons.person_outlined):Icon(Icons.cancel_outlined),
                   ):Container(),
                   !userbuttonTap?FloatingActionButton(
+                    backgroundColor: Colors.lightBlue,
+                    elevation: 0,
                     onPressed:(){
                       setState(() {
                         probuttonTap=!probuttonTap;
                         buttonTap=!buttonTap;
                       });
                     },
-                    child: const Icon(Icons.people_alt_outlined),
+                    child: !probuttonTap?Icon(Icons.people_alt_outlined):Icon(Icons.cancel_outlined),
                   ):Container(),
+
                 ],
               ),
+
           ],
         ),
         ]
