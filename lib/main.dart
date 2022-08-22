@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -9,11 +10,16 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'choose_umbrella.dart';
+import 'awaitUser.dart';
+import 'T_card.dart';
 
 
 bool buttonTap=false;
 bool userbuttonTap=false;
 bool probuttonTap=false;
+List<dynamic> fingerprintkeys=[];
+Map valueMap={};
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,25 +60,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late GoogleMapController _controller;
 
-  final CameraPosition _initialPosition =
-  CameraPosition(target: LatLng( 37.56332978493992, 126.97981417179109),zoom: 17);
+  late CameraPosition _initialPosition =
+  CameraPosition(target: LatLng((locationData?.latitude)!, (locationData?.longitude)!),zoom: 17);
 
-  final List<Marker> markers = [];
+  List<Marker> markers = [];
 
   addMarker(cordinate) {
     int id = Random().nextInt(100);
 
     setState(() {
-      if(markers.length==1)
+      if(markers.length>=1)
       {
-        markers[0]=Marker(position: cordinate, markerId: MarkerId(id.toString()));
+        markers=[];
+        markers.add(Marker(position: cordinate, markerId: MarkerId(id.toString())));
+        print(markers.length);
       }
       else
       {
-        markers
-            .add(Marker(position: cordinate, markerId: MarkerId(id.toString())));
+        markers.add(Marker(position: cordinate, markerId: MarkerId(id.toString())));
       }
-
     });
   }
 
@@ -128,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   :Padding(
                 padding: EdgeInsets.fromLTRB(0,80,0, 0),
                 child: AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Text("",style: TextStyle(color: Colors.white,fontSize: 30),)),
-              )
+              ),
             ]
           ),
           !buttonTap?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/Rain.gif'),fit: BoxFit.cover,height: double.infinity,))
@@ -141,7 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
               duration: Duration(seconds: 1),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
-                child: Text("share\numbrella",style: TextStyle(fontSize: 35,fontFamily: 'Silkscreen-Regular'),),
+                child: Text("share\numbrella",style: TextStyle(fontSize: 35,fontFamily: 'Silkscreen-Regular',color: Colors.lightBlue),),
               ),
             ):AnimatedOpacity(
               opacity: 0,
@@ -169,8 +175,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 onTap: (cordinate) {
                   _controller.animateCamera(CameraUpdate.newLatLng(cordinate));
-                  print(cordinate.longitude);
-                  print(cordinate.latitude);
                   addMarker(cordinate);
                 },
               ),
@@ -185,6 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       setState(() {
                         userbuttonTap=!userbuttonTap;
                         buttonTap=!buttonTap;
+                        markers=[];
                       });
                     },
                     child: !userbuttonTap?Icon(Icons.person_outlined):Icon(Icons.cancel_outlined),
@@ -196,16 +201,48 @@ class _MyHomePageState extends State<MyHomePage> {
                       setState(() {
                         probuttonTap=!probuttonTap;
                         buttonTap=!buttonTap;
+                        markers=[];
                       });
                     },
-                    child: !probuttonTap?Icon(Icons.people_alt_outlined):Icon(Icons.cancel_outlined),
+                    child: !probuttonTap?Icon(Icons.umbrella_outlined):Icon(Icons.cancel_outlined),
                   ):Container(),
+
 
                 ],
               ),
 
+
           ],
         ),
+          markers.length==1?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(170,180,0, 0),
+              child: OutlinedButton( onPressed: () {
+                userbuttonTap?writeDataforUser(markers[0].position):writeDataforProvider(markers[0].position);
+                DBRef.once().then((DatabaseEvent dataSnapshot){
+                  String data=dataSnapshot.snapshot.value.toString();
+                  valueMap=jsonDecode(data);
+                  fingerprintkeys=valueMap.keys.toList();
+                  userbuttonTap?Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TCardPage(_fingerPrint?.replaceAll('"', ''), locationData?.longitude, locationData?.latitude,markers,fingerprintkeys,valueMap)),
+                  ):
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => awaitUser()),
+                  );
+                });
+
+                },
+                child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white)),
+                style: OutlinedButton.styleFrom(side: BorderSide(width: 3.0,color: Colors.white)), ),
+            ),
+          ):AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(170,180,0, 0),
+              child: OutlinedButton( onPressed: () { }, child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white)),style: OutlinedButton.styleFrom(side: BorderSide(width: 3.0,color: Colors.white)), ),
+            ),
+          )
         ]
       ),
 
@@ -213,27 +250,23 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void writeDataforUser() {
+  void writeDataforUser(LatLng latLng) {
       DBRef.child(_fingerPrint!).set({
-      'type':'사용자',
-      'currentLocation_x': locationData?.longitude.toString(),
-        'currentLocation_y': locationData?.latitude.toString(),
-        'futureLocation' : 'x,y 좌표'
+      '"type"':'"사용자"',
+      '"currentLocation_x"': locationData?.longitude,
+        '"currentLocation_y"': locationData?.latitude,
+        '"futureLocation_x"' : latLng.longitude,
+        '"futureLocation_y"' : latLng.latitude
     });
   }
 
-  void writeDataforProvider() {
+  void writeDataforProvider(LatLng latLng) {
     DBRef.child(_fingerPrint!).set({
-      'type':'제공자',
-      'currentLocation_x': locationData?.longitude.toString(),
-      'currentLocation_y': locationData?.latitude.toString(),
-      'futureLocation' : 'x,y 좌표'
-    });
-  }
-
-  void readData() {
-    DBRef.once().then((DatabaseEvent dataSnapshot){
-      print(dataSnapshot.snapshot.value);
+      '"type"':'"제공자"',
+      '"currentLocation_x"': locationData?.longitude,
+      '"currentLocation_y"': locationData?.latitude,
+      '"futureLocation_x"' : latLng.longitude,
+      '"futureLocation_y"' : latLng.latitude
     });
   }
 
@@ -254,17 +287,16 @@ class _MyHomePageState extends State<MyHomePage> {
       AndroidDeviceInfo androidInfo=await deviceInfo.androidInfo;
       print(androidInfo.fingerprint);
       setState(() {
-
         _fingerPrint=androidInfo.fingerprint;
         _fingerPrint=_fingerPrint?.replaceAll('.', '');
         _fingerPrint=_fingerPrint?.replaceAll('/', '');
+        _fingerPrint=_fingerPrint?.replaceAll(':', '');
+        _fingerPrint='"'+_fingerPrint!+'"';
         print(_fingerPrint);
         locationData=_locationData;
         print(_locationData.latitude);
         print(_locationData.longitude);
-
       });
-
     }
     else if(Platform.isIOS){
       IosDeviceInfo iosInfo=await deviceInfo.iosInfo;
