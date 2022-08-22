@@ -69,9 +69,11 @@ class _MyHomePageState extends State<MyHomePage> {
     int id = Random().nextInt(100);
 
     setState(() {
-      if(markers.length==1)
+      if(markers.length>=1)
       {
-        markers[0]=Marker(position: cordinate, markerId: MarkerId(id.toString()));
+        markers=[];
+        markers.add(Marker(position: cordinate, markerId: MarkerId(id.toString())));
+        print(markers.length);
       }
       else
       {
