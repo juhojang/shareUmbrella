@@ -23,7 +23,7 @@ List<Color> colors = [
   Colors.teal,
 ];
 
-
+late List<Marker> ProviderMarker=[];
 
 class TCardPage extends StatefulWidget {
 
@@ -36,9 +36,13 @@ class TCardPage extends StatefulWidget {
 
   late List<Marker> markers = [];
 
+  List<dynamic> fingerprintkeys=[];
+
+  Map valueMap={};
 
 
-  TCardPage(this.fingerPrint,this.locationX,this.locationY,this.markers);
+
+  TCardPage(this.fingerPrint,this.locationX,this.locationY,this.markers,this.fingerprintkeys,this.valueMap);
 
 
 
@@ -49,7 +53,6 @@ class TCardPage extends StatefulWidget {
 
 class _TCardPageState extends State<TCardPage> {
 
-  late List<Marker> ProviderMarker;
 
   late GoogleMapController mapController;
 
@@ -66,16 +69,30 @@ class _TCardPageState extends State<TCardPage> {
   @override
   void initState() {
     super.initState();
-    readData();
-    setState(() {
+    print("bye");
+    print(widget.valueMap);
+    for(int i=0;i<widget.fingerprintkeys.length;i++)
+    {
+      if(widget.fingerprintkeys[i]!=widget.fingerPrint)
+      {
+        Map detail=widget.valueMap[widget.fingerprintkeys[i]];
+        int id = Random().nextInt(100);
+        widget.markers.add(Marker(position: LatLng(detail["futureLocation_y"], detail["futureLocation_x"]), markerId: MarkerId(id.toString())));
+        print("hi");
+        print(detail["currentLocation_x"]);
+        print( ProviderMarker.length);
+      }
+    }
+    print(widget.markers.length);
 
-    });
   }
 
   int _index = 0;
 
   @override
   Widget build(BuildContext context) {
+    print("check");
+    print(widget.markers);
     return Scaffold(
       body: Center(
         child: Column(
@@ -145,7 +162,6 @@ class _TCardPageState extends State<TCardPage> {
                 OutlinedButton(
                   onPressed: () {
                     _controller.back();
-                    readData();
                   },
                   child: Text('되돌리기'),
                 ),
@@ -166,31 +182,8 @@ class _TCardPageState extends State<TCardPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Text(_index.toString()),
-      ),
     );
   }
 
-  void readData() {
-    DBRef.once().then((DatabaseEvent dataSnapshot){
-      String data=dataSnapshot.snapshot.value.toString();
-      Map valueMap=jsonDecode(data);
-      List<dynamic> fingerprintkeys=valueMap.keys.toList();
-      for(int i=0;i<fingerprintkeys.length;i++)
-        {
-          if(fingerprintkeys[i]!=widget.fingerPrint)
-            {
-              Map detail=valueMap[fingerprintkeys[i]];
-              int id = Random().nextInt(100);
-              ProviderMarker.add(Marker(position: LatLng(detail["currentLocation_x"], detail["currentLocation_y"]), markerId: MarkerId(id.toString())));
-              print("hi");
-              print(detail["currentLocation_x"]);
-              print(widget.markers);
-            }
-        }
-    });
-  }
 }
 
