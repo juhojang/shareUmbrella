@@ -11,18 +11,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:location/location.dart';
 
-List<Color> colors = [
-  Colors.blue,
-  Colors.yellow,
-  Colors.red,
-  Colors.orange,
-  Colors.pink,
-  Colors.amber,
-  Colors.cyan,
-  Colors.purple,
-  Colors.brown,
-  Colors.teal,
-];
 
 late List<Marker> ProviderMarker=[];
 
@@ -89,6 +77,16 @@ class _TCardPageState extends State<TCardPage> {
   }
 
 
+  double Distance(double lat1,double lon1,double lat2,double lon2){
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 - c((lat2 - lat1) * p)/2 +
+        c(lat1 * p) * c(lat2 * p) *
+            (1 - c((lon2 - lon1) * p))/2;
+    return 12742 * asin(sqrt(a))*1000;
+  }
+
+
   int _index = 0;
 
   @override
@@ -109,6 +107,11 @@ class _TCardPageState extends State<TCardPage> {
                 cards: List.generate(
                   widget.markers.length~/2,
                       (int index) {
+                        double distance1=Distance(widget.locationX!, widget.locationY!,
+                            widget.markers[2*index+1].position.longitude,widget.markers[2*index+1].position.latitude);
+                        print(distance1);
+                        double distance2=Distance(widget.markers[0].position.longitude, widget.markers[0].position.latitude,
+                            widget.markers[2*index+2].position.longitude,widget.markers[2*index+2].position.latitude);
                     return Container(
                       color: Colors.lightBlue,
                       alignment: Alignment.center,
@@ -141,12 +144,12 @@ class _TCardPageState extends State<TCardPage> {
                           ),
                           Spacer(),
                           Text(
-                            '거리',
+                            '출발거리 차이: ${distance1.toStringAsFixed(3)} m',
                             style: TextStyle(fontSize: 20.0, color: Colors.white),
                           ),
                           Spacer(),
                           Text(
-                            '거리',
+                            '도착거리 차이: ${distance2.toStringAsFixed(3)} m',
                             style: TextStyle(fontSize: 20.0, color: Colors.white),
                           ),
                           Spacer(),
@@ -195,7 +198,6 @@ class _TCardPageState extends State<TCardPage> {
                     onPressed: () {
                       buttonTap=true;
                       setState(() {
-
                       });
                     },
                     child: Text('선택'),
@@ -209,6 +211,5 @@ class _TCardPageState extends State<TCardPage> {
       ),
     );
   }
-
 }
 
