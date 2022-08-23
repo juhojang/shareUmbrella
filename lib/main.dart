@@ -10,7 +10,6 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'choose_umbrella.dart';
 import 'awaitUser.dart';
 import 'T_card.dart';
 
@@ -126,10 +125,10 @@ class _MyHomePageState extends State<MyHomePage> {
               Container(),
               buttonTap?userbuttonTap?Padding(
                 padding: EdgeInsets.fromLTRB(95,80,0, 0),
-                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Text("사용자님 환영합니다.\n도착 위치 선택하세요.",style: TextStyle(color: Colors.white,fontSize: 30),)),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Text("사용자님 환영합니다.\n도착 위치를 선택하세요.",style: TextStyle(color: Colors.white,fontSize: 25,fontFamily: 'Galmuri11-Bold'),)),
               ):Padding(
                 padding: EdgeInsets.fromLTRB(90,80,0, 0),
-                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Text("공급자님 환영합니다.\n도착 위치를 선택하세요",style: TextStyle(color: Colors.white,fontSize: 30),)),
+                child: AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Text("공급자님 환영합니다.\n도착 위치를 선택하세요",style: TextStyle(color: Colors.white,fontSize: 25,fontFamily: 'Galmuri11-Bold'),)),
               )
                   :Padding(
                 padding: EdgeInsets.fromLTRB(0,80,0, 0),
@@ -148,6 +147,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Padding(
                 padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
                 child: Text("share\numbrella",style: TextStyle(fontSize: 35,fontFamily: 'Silkscreen-Regular',color: Colors.lightBlue),),
+              ),
+            ):AnimatedOpacity(
+              opacity: 0,
+              duration: Duration(seconds: 1),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                child: Text("",style: TextStyle(fontSize: 35,fontFamily: 'Silkscreen-Regular'),),
+              ),
+            ),
+            !buttonTap?AnimatedOpacity(
+              opacity: 1,
+              duration: Duration(seconds: 1),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                child: Text("우산 같이쓰자!",style: TextStyle(fontSize: 31,fontFamily: 'Galmuri11-Bold',color: Colors.lightBlue),),
               ),
             ):AnimatedOpacity(
               opacity: 0,
@@ -230,18 +244,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   ):
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => awaitUser()),
+                    MaterialPageRoute(builder: (context) => awaitUser(_fingerPrint?.replaceAll('"', ''), locationData?.longitude, locationData?.latitude,markers,fingerprintkeys,valueMap)),
                   );
                 });
 
                 },
-                child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white)),
+                child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white,fontFamily: 'Galmuri11-Bold')),
                 style: OutlinedButton.styleFrom(side: BorderSide(width: 3.0,color: Colors.white)), ),
             ),
           ):AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),
             child: Padding(
               padding: EdgeInsets.fromLTRB(170,180,0, 0),
-              child: OutlinedButton( onPressed: () { }, child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white)),style: OutlinedButton.styleFrom(side: BorderSide(width: 3.0,color: Colors.white)), ),
+              child: OutlinedButton( onPressed: () { }, child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white,fontFamily: 'Galmuri11-Bold')),style: OutlinedButton.styleFrom(side: BorderSide(width: 3.0,color: Colors.white)), ),
             ),
           )
         ]
