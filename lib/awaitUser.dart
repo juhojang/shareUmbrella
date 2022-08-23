@@ -75,15 +75,15 @@ class _awaitUserState extends State<awaitUser> {
         children: [
           Padding(
             padding: EdgeInsets.fromLTRB(10, 50, 0, 0),
-            child: !match?Text("우산공유자 등록 완료",style: TextStyle(fontSize: 40,color: Colors.lightBlue)):
-            Text("우산필요자와 매칭",style: TextStyle(fontSize: 40,color: Colors.lightBlue)),
+            child: !match?Text("우산공유자 등록 완료",style: TextStyle(fontSize: 35,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')):
+            Text("우산필요자와 매칭",style: TextStyle(fontSize: 40,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')),
           ),
           Spacer(),
           Spacer(),
           Center(
             child: Padding(
             padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              child: !match?Text("우산필요한 사람과 매칭을 기다리는 중...",style: TextStyle(fontSize: 20,color: Colors.lightBlue,)):
+              child: !match?Text("우산필요한 사람과 매칭을 기다리는 중...",style: TextStyle(fontSize: 15,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')):
               Text("",style: TextStyle(fontSize: 0,color: Colors.lightBlue)),),
           ),
           Spacer(),
@@ -91,24 +91,24 @@ class _awaitUserState extends State<awaitUser> {
           Spacer(),
           Padding(
             padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-            child: !match?Text("필요자와 우산을 같이 쓰고 갈 수 있을 뿐만 아니라\n 중고우산을 팔 수도 있어요!",style: TextStyle(fontSize: 17,color: Colors.lightBlue,)):
+            child: !match?Text("필요자와 우산을 같이 쓰고 갈 수 있을 뿐만 아니라\n 중고우산을 팔 수도 있어요!",style: TextStyle(fontSize: 14,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')):
             Text("",style: TextStyle(fontSize: 0,color: Colors.lightBlue)),),
           Spacer(),
           Spacer(),
           Padding(
             padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-            child: !match?Text("필요자에게 정당한 대가를 요구해보세요.\n 물론 공짜도 좋지만요 :)",style: TextStyle(fontSize: 17,color: Colors.lightBlue,)):
+            child: !match?Text("필요자에게 정당한 대가를 요구해보세요.\n 물론 공짜도 좋지만요 :)",style: TextStyle(fontSize: 17,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')):
             Text("",style: TextStyle(fontSize: 0,color: Colors.lightBlue)),),
           Spacer(),
           match?OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
               onPressed:(){    timer?.cancel();},
-              child: Text("우산필요자와 대화",style: TextStyle(color: Colors.white,fontSize: 20),)):Container(),
+              child: Text("우산필요자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)):Container(),
           Spacer(),
           OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
               onPressed:(){    timer?.cancel();},
-              child: Text("등록취소",style: TextStyle(color: Colors.white,fontSize: 20),)),
+              child: Text("등록취소",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
           Spacer(),
 
         ],
@@ -116,7 +116,7 @@ class _awaitUserState extends State<awaitUser> {
         children: [
           Padding(
             padding: EdgeInsets.fromLTRB(10, 50, 0, 0),
-            child: Text("우산필요자와 매칭 성공!",style: TextStyle(fontSize: 35,color: Colors.lightBlue)),
+            child: Text("우산필요자와 매칭 성공!",style: TextStyle(fontSize: 30,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')),
           ),
           Spacer(),
           Container(
@@ -142,12 +142,12 @@ class _awaitUserState extends State<awaitUser> {
           match?OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
               onPressed:(){    timer?.cancel();},
-              child: Text("우산필요자와 대화",style: TextStyle(color: Colors.white,fontSize: 20),)):Container(),
+              child: Text("우산필요자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)):Container(),
           Spacer(),
           OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
               onPressed:(){    timer?.cancel();},
-              child: Text("등록취소",style: TextStyle(color: Colors.white,fontSize: 20),)),
+              child: Text("등록취소",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
           Spacer(),
 
         ],
