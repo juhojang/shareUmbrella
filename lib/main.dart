@@ -137,8 +137,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ]
           ),
-          !buttonTap?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/Rain.gif'),fit: BoxFit.cover,height: double.infinity,))
-              :AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/Rain.gif'),fit: BoxFit.cover,height: double.infinity,)),
+          !buttonTap?AnimatedOpacity(opacity: 0.2,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,))
+              :AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,)),
           Column(
           children: [
             Spacer(),
@@ -159,8 +159,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Spacer(),
             buttonTap?Container(
-              width: 500,
-              height: 500,
+              width: 550,
+              height: 550,
               child: GoogleMap(
                 initialCameraPosition: _initialPosition,
                 mapType: MapType.normal,
@@ -183,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   !probuttonTap?FloatingActionButton(
-                    backgroundColor: Colors.lightBlue,
+                    backgroundColor: Colors.transparent,
                     elevation: 0,
                     onPressed:(){
                       setState(() {
@@ -192,10 +192,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         markers=[];
                       });
                     },
-                    child: !userbuttonTap?Icon(Icons.person_outlined):Icon(Icons.cancel_outlined),
+                    child: !userbuttonTap?Icon(Icons.person_outlined,color: Colors.lightBlue,size: 50,):Icon(Icons.cancel_outlined,size: 50),
                   ):Container(),
                   !userbuttonTap?FloatingActionButton(
-                    backgroundColor: Colors.lightBlue,
+                    backgroundColor: Colors.transparent,
                     elevation: 0,
                     onPressed:(){
                       setState(() {
@@ -204,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         markers=[];
                       });
                     },
-                    child: !probuttonTap?Icon(Icons.umbrella_outlined):Icon(Icons.cancel_outlined),
+                    child: !probuttonTap?Icon(Icons.umbrella_outlined,color: Colors.lightBlue,size: 50):Icon(Icons.cancel_outlined,size: 50),
                   ):Container(),
 
 
@@ -223,6 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   String data=dataSnapshot.snapshot.value.toString();
                   valueMap=jsonDecode(data);
                   fingerprintkeys=valueMap.keys.toList();
+                  print(fingerprintkeys);
                   userbuttonTap?Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => TCardPage(_fingerPrint?.replaceAll('"', ''), locationData?.longitude, locationData?.latitude,markers,fingerprintkeys,valueMap)),
