@@ -27,11 +27,15 @@ class awaitUser extends StatefulWidget {
 
 class _awaitUserState extends State<awaitUser> {
 
+  late GoogleMapController mapController;
+
   final DBRef=FirebaseDatabase.instance.reference();
 
   String userFingerprint='';
 
   bool match=false;
+
+  late CameraPosition _initialPosition = CameraPosition(target: LatLng(widget.locationY!,widget.locationX!),zoom: 15);
 
   Timer? timer;
 
@@ -55,6 +59,10 @@ class _awaitUserState extends State<awaitUser> {
         {
           timer.cancel();
           userFingerprint=newMap["selected"];
+          widget.markers.add(Marker(position: LatLng(widget.valueMap[userFingerprint]["currentLocation_y"],
+              widget.valueMap[userFingerprint]["currentLocation_x"]), markerId: MarkerId(userFingerprint+"current"),icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan)));
+          widget.markers.add(Marker(position: LatLng(widget.valueMap[userFingerprint]["futureLocation_y"],
+              widget.valueMap[userFingerprint]["futureLocation_x"]), markerId: MarkerId(userFingerprint+"future"),icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue)));
           print(userFingerprint);
           setState(() {
             match=true;
@@ -63,7 +71,7 @@ class _awaitUserState extends State<awaitUser> {
       });
     });
     return Scaffold(
-      body: Column(
+      body: !match?Column(
         children: [
           Padding(
             padding: EdgeInsets.fromLTRB(10, 50, 0, 0),
@@ -91,6 +99,45 @@ class _awaitUserState extends State<awaitUser> {
             padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
             child: !match?Text("필요자에게 정당한 대가를 요구해보세요.\n 물론 공짜도 좋지만요 :)",style: TextStyle(fontSize: 17,color: Colors.lightBlue,)):
             Text("",style: TextStyle(fontSize: 0,color: Colors.lightBlue)),),
+          Spacer(),
+          match?OutlinedButton(
+              style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
+              onPressed:(){    timer?.cancel();},
+              child: Text("우산필요자와 대화",style: TextStyle(color: Colors.white,fontSize: 20),)):Container(),
+          Spacer(),
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
+              onPressed:(){    timer?.cancel();},
+              child: Text("등록취소",style: TextStyle(color: Colors.white,fontSize: 20),)),
+          Spacer(),
+
+        ],
+      ):Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(10, 50, 0, 0),
+            child: Text("우산필요자와 매칭 성공!",style: TextStyle(fontSize: 35,color: Colors.lightBlue)),
+          ),
+          Spacer(),
+          Container(
+            width: 550,
+            height: 550,
+            child: GoogleMap(
+              initialCameraPosition: _initialPosition,
+              mapType: MapType.normal,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+              onMapCreated: (controller) {
+                setState(() {
+                  mapController = controller;
+                });
+              },
+              onTap: (cordinate) {
+                mapController.animateCamera(CameraUpdate.newLatLng(cordinate));
+              },
+              markers:widget.markers.toSet(),
+            ),
+          ),
           Spacer(),
           match?OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
