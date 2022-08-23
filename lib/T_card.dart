@@ -91,8 +91,6 @@ class _TCardPageState extends State<TCardPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("hey");
-    print(widget.markers.toSet());
     return Scaffold(
       body: Stack(
         children: [
@@ -103,6 +101,10 @@ class _TCardPageState extends State<TCardPage> {
           ),
           !buttonTap?AnimatedOpacity(opacity: 0.1,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,))
               :AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,)),
+          Padding(
+              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              child: !buttonTap?Center(child: Text("이런\n 더 이상의 공유자가 없어요 :(",style: TextStyle(fontSize: 25,color: Colors.lightBlue))):
+          Text("",style: TextStyle(fontSize: 40,color: Colors.lightBlue))),
           !buttonTap?Column(
             children: <Widget>[
               SizedBox(height: 120),
