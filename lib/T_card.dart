@@ -98,7 +98,8 @@ class _TCardPageState extends State<TCardPage> {
         children: [
           Padding(
             padding: EdgeInsets.fromLTRB(10, 50, 0, 0),
-            child: Text("우산공유자 선택",style: TextStyle(fontSize: 40,color: Colors.lightBlue)),
+            child: !buttonTap?Text("우산공유자 선택",style: TextStyle(fontSize: 40,color: Colors.lightBlue)):
+            Text("우산공유자와 매칭",style: TextStyle(fontSize: 40,color: Colors.lightBlue)),
           ),
           !buttonTap?AnimatedOpacity(opacity: 0.1,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,))
               :AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,)),
@@ -203,8 +204,17 @@ class _TCardPageState extends State<TCardPage> {
                       child: FloatingActionButton(
                         backgroundColor: Colors.green.shade100,
                         onPressed: () {
-                          buttonTap=true;
+                          widget.fingerprintkeys.remove(widget.fingerPrint);
+                          DBRef.child('"'+widget.fingerprintkeys[_index]+'"').set({
+                            '"type"':'"제공자"',
+                            '"currentLocation_x"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_x"],
+                            '"currentLocation_y"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_y"],
+                            '"futureLocation_x"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_x"],
+                            '"futureLocation_y"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_y"],
+                            '"selected"' : '"'+widget.fingerPrint!+'"'
+                          });
                           setState(() {
+                            buttonTap=true;
                           });
                         },
                         child: Icon(Icons.check,size: 70,color: Colors.green,),
@@ -229,7 +239,25 @@ class _TCardPageState extends State<TCardPage> {
 
             ],
 
-        ):Container(),
+        ):Column(
+            children: [
+              Spacer(),
+              Spacer(),
+              Spacer(),
+              Spacer(),
+              Spacer(),
+              Spacer(),
+              Center(
+                  child: Text("우산공유자에게 고마움에 대한 답례를 해보세요 :)",style: TextStyle(fontSize: 17,color: Colors.lightBlue)),
+                ),
+              Spacer(),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
+                  onPressed:(){},
+                  child: Text("우산공유자와 대화",style: TextStyle(color: Colors.white,fontSize: 20),)),
+              Spacer(),
+            ],
+          ),
         ]
       ),
     );
