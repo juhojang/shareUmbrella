@@ -237,6 +237,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   String data=dataSnapshot.snapshot.value.toString();
                   valueMap=jsonDecode(data);
                   fingerprintkeys=valueMap.keys.toList();
+                  for(int i=0;i<fingerprintkeys.length;i++)
+                    {
+                      if(userbuttonTap==true)
+                          {
+                            if(valueMap[fingerprintkeys[i]]["type"]=="사용자")
+                            {
+                              valueMap.remove(fingerprintkeys[i]);
+                              fingerprintkeys.remove(fingerprintkeys[i]);
+                              print("remove");
+                            }
+                          }
+                    }
                   print(fingerprintkeys);
                   userbuttonTap?Navigator.push(
                     context,
