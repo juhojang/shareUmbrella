@@ -181,8 +181,8 @@ class _awaitUserState extends State<awaitUser> {
           ),
           Spacer(),
           Container(
-            width: 550,
-            height: 200,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height/2,
             child: GoogleMap(
               initialCameraPosition: _initialPosition,
               mapType: MapType.normal,
