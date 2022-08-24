@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'chatPage.dart';
+import 'main.dart';
 
 class awaitUser extends StatefulWidget {
   String? fingerPrint;
@@ -215,24 +216,55 @@ class _awaitUserState extends State<awaitUser> {
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
               onPressed:(){
                 timer?.cancel();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => chatting(userFingerprint,widget.fingerPrint!)));
+                DBRef.once().then((DatabaseEvent dataSnapshot){
+                  String data=dataSnapshot.snapshot.value.toString();
+                  valueMap=jsonDecode(data);
+                  List<dynamic> currentfingerprintkeys=valueMap.keys.toList();
+                  if(currentfingerprintkeys.contains(userFingerprint))
+                  {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => chatting(userFingerprint,widget.fingerPrint!,widget.fingerPrint!)));
+                  }
+                  else{
+                    showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            content: Text("상대방이 매칭을 취소했습니다.\n 전 화면으로 돌아갑니다.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.deepOrange),),
+                            insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                            actions: [
+                              TextButton(
+                                child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
+                                onPressed: () {
+                                  deleteData();
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        }
+                    );
+                  }
+                });
                   },
               child: Text("우산필요자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)):Container(),
           Spacer(),
           OutlinedButton(
-              style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
-              onPressed:(){                showDialog(
+              style: OutlinedButton.styleFrom(backgroundColor:Colors.deepOrange, side: BorderSide(width:5.0,color: Colors.deepOrange)),
+              onPressed:(){
+                showDialog(
                   context: context,
-                  barrierDismissible: true, // 바깥 영역 터치시 닫을지 여부
+                  barrierDismissible: true,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                      content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.deepOrange),),
                       insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
                       actions: [
                         TextButton(
-                          child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                          child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                           onPressed: () {
                             timer?.cancel();
                             deleteData();
@@ -241,7 +273,7 @@ class _awaitUserState extends State<awaitUser> {
                           },
                         ),
                         TextButton(
-                          child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                          child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
