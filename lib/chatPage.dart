@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bubble/bubble.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class chatting extends StatefulWidget {
 
@@ -18,6 +19,12 @@ class _chattingState extends State<chatting> {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   final myController = TextEditingController();
+
+  final DBRef=FirebaseDatabase.instance.reference();
+
+  void deleteData() {
+    DBRef.child('"'+widget.myFingerPrint+'"').remove();
+  }
 
 
   @override
@@ -46,11 +53,11 @@ class _chattingState extends State<chatting> {
                           barrierDismissible: true,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              content: Text("주의\n\n정말로 신고하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                              content: Text("주의\n\n정말로 신고하시겠어요?\n신고하면 대화기록이 저장되고 상대방은 밴유저로 기록됩니다.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.red),),
                               insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
                               actions: [
                                 TextButton(
-                                  child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                  child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.red),),
                                   onPressed: () async{
                                     if(widget.fingerPrintProvider!=widget.myFingerPrint)
                                     {
@@ -59,13 +66,14 @@ class _chattingState extends State<chatting> {
                                     else{
                                       firestore.collection("bannedUser").add({"fingerPrint":widget.fingerPrintUser});
                                     }
+                                    deleteData();
                                     Navigator.of(context).pop();
                                     Navigator.of(context).pop();
                                     Navigator.of(context).pop();
                                   },
                                 ),
                                 TextButton(
-                                  child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                  child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.red),),
                                   onPressed: () {
                                     firestore.collection('chat').doc("chatDetail").delete();
                                     Navigator.of(context).pop();
@@ -98,6 +106,7 @@ class _chattingState extends State<chatting> {
                                   for (var doc in snapshots.docs) {
                                     await doc.reference.delete();
                                   }
+                                  deleteData();
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
@@ -119,7 +128,40 @@ class _chattingState extends State<chatting> {
               Spacer(),
               OutlinedButton(
                   style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
-                  onPressed:(){},
+                  onPressed:() {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: true, // 바깥 영역 터치시 닫을지 여부
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            content: Text("주의\n\n정말로 도챡하셨나요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                            insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                            actions: [
+                              TextButton(
+                                child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                onPressed: () async{
+                                  var collection = FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider);
+                                  var snapshots = await collection.get();
+                                  for (var doc in snapshots.docs) {
+                                    await doc.reference.delete();
+                                  }
+                                  deleteData();
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              TextButton(
+                                child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        }
+                    );
+                  },
                   child: Text("도착완료",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
               Spacer(),
             ],
