@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bubble/bubble.dart';
@@ -7,8 +6,9 @@ class chatting extends StatefulWidget {
 
   String fingerPrintUser="";
   String fingerPrintProvider="";
+  String myFingerPrint="";
 
-  chatting(this.fingerPrintUser,this.fingerPrintProvider);
+  chatting(this.fingerPrintUser,this.fingerPrintProvider,this.myFingerPrint);
 
   @override
   State<chatting> createState() => _chattingState();
@@ -23,7 +23,7 @@ class _chattingState extends State<chatting> {
   @override
   void initState() {
     super.initState();
-    firestore.collection('chat').doc("chatDetail").collection(widget.fingerPrintUser+widget.fingerPrintProvider).add({'name':"your name", "id":"your id"});
+    firestore.collection(widget.fingerPrintUser+widget.fingerPrintProvider).add({'name':"your name", "id":"your id"});
   }
 
 
@@ -51,7 +51,15 @@ class _chattingState extends State<chatting> {
                               actions: [
                                 TextButton(
                                   child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
-                                  onPressed: () {
+                                  onPressed: () async{
+                                    if(widget.fingerPrintProvider!=widget.myFingerPrint)
+                                    {
+                                      firestore.collection("bannedUser").add({"fingerPrint":widget.fingerPrintProvider});
+                                    }
+                                    else{
+                                      firestore.collection("bannedUser").add({"fingerPrint":widget.fingerPrintUser});
+                                    }
+                                    Navigator.of(context).pop();
                                     Navigator.of(context).pop();
                                     Navigator.of(context).pop();
                                   },
@@ -59,6 +67,7 @@ class _chattingState extends State<chatting> {
                                 TextButton(
                                   child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
                                   onPressed: () {
+                                    firestore.collection('chat').doc("chatDetail").delete();
                                     Navigator.of(context).pop();
                                   },
                                 ),
@@ -83,7 +92,13 @@ class _chattingState extends State<chatting> {
                             actions: [
                               TextButton(
                                 child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
-                                onPressed: () {
+                                onPressed: () async{
+                                  var collection = FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider);
+                                  var snapshots = await collection.get();
+                                  for (var doc in snapshots.docs) {
+                                    await doc.reference.delete();
+                                  }
+                                  Navigator.of(context).pop();
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
                                 },
@@ -122,8 +137,8 @@ class _chattingState extends State<chatting> {
           elevation: 1,
           alignment: Alignment.topRight,
           nip: BubbleNip.rightTop,
-          color: Color.fromARGB(255, 225, 255, 199),
-          child: Text('안녕하세요',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23),),
+          color: Colors.lightBlue.shade200,
+          child: Text('안녕하세요',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: Colors.white),),
         ),
         Bubble(
           margin: BubbleEdges.only(top: 10,left: 10,bottom: 10),
@@ -137,8 +152,8 @@ class _chattingState extends State<chatting> {
           elevation: 1,
           alignment: Alignment.topRight,
           nip: BubbleNip.rightTop,
-          color: Color.fromARGB(255, 225, 255, 199),
-          child: Text('커피한잔 사주시면 우산 빌려드릴게요',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23),),
+          color: Colors.lightBlue.shade200,
+          child: Text('커피한잔 사주시면 우산 빌려드릴게요',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: Colors.white),),
         ),
         Spacer(),
             Row(
