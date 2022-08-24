@@ -237,18 +237,30 @@ class _MyHomePageState extends State<MyHomePage> {
                   String data=dataSnapshot.snapshot.value.toString();
                   valueMap=jsonDecode(data);
                   fingerprintkeys=valueMap.keys.toList();
-                  for(int i=0;i<fingerprintkeys.length;i++)
-                    {
-                      if(userbuttonTap==true)
+                  if(userbuttonTap==true)
+                  {
+                    for(int i=0;i<fingerprintkeys.length;i++)
                           {
                             if(valueMap[fingerprintkeys[i]]["type"]=="사용자")
                             {
                               valueMap.remove(fingerprintkeys[i]);
                               fingerprintkeys.remove(fingerprintkeys[i]);
+                              i=i-1;
                               print("remove");
                             }
                           }
+                    for(int i=0;i<fingerprintkeys.length;i++)
+                    {
+                      print(fingerprintkeys[i]);
+                      if(valueMap[fingerprintkeys[i]]["selected"]!=null)
+                      {
+                        valueMap.remove(fingerprintkeys[i]);
+                        fingerprintkeys.remove(fingerprintkeys[i]);
+                        i=i-1;
+                        print("erase");
+                      }
                     }
+                  }
                   print(fingerprintkeys);
                   userbuttonTap?Navigator.push(
                     context,
