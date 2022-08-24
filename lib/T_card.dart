@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -56,6 +55,10 @@ class _TCardPageState extends State<TCardPage> {
   bool noPerson=false;
 
   List<Marker> viewMarker=[];
+
+  void deleteData() {
+    DBRef.child('"'+widget.fingerPrint!+'"').remove();
+  }
 
 
   late CameraPosition _initialPosition = CameraPosition(target: LatLng(widget.locationY!,widget.locationX!),zoom: 15);
@@ -268,32 +271,63 @@ class _TCardPageState extends State<TCardPage> {
               OutlinedButton(
                 style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
                   onPressed:(){
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => chatting(widget.fingerPrint!,widget.fingerprintkeys[_index])));
+                    DBRef.once().then((DatabaseEvent dataSnapshot){
+                      String data=dataSnapshot.snapshot.value.toString();
+                      valueMap=jsonDecode(data);
+                      List<dynamic> currentfingerprintkeys=valueMap.keys.toList();
+                      if(currentfingerprintkeys.contains(widget.fingerprintkeys[_index]))
+                        {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => chatting(widget.fingerPrint!,widget.fingerprintkeys[_index],widget.fingerPrint!)));
+                        }
+                      else{
+                        showDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                content: Text("상대방이 매칭을 취소했습니다.\n 전 화면으로 돌아갑니다.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.deepOrange),),
+                                insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
+                                    onPressed: () {
+                                      deleteData();
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            }
+                        );
+                      }
+                    });
                   },
                   child: Text("우산공유자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
               Spacer(),
               OutlinedButton(
-                  style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
+                  style: OutlinedButton.styleFrom(backgroundColor:Colors.deepOrange, side: BorderSide(width:5.0,color: Colors.deepOrange)),
                   onPressed:(){
                     showDialog(
                         context: context,
                         barrierDismissible: true,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                            content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.deepOrange),),
                             insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
                             actions: [
                               TextButton(
-                                child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                                 onPressed: () {
+                                  deleteData();
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
                                 },
                               ),
                               TextButton(
-                                child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
