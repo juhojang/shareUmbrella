@@ -223,7 +223,6 @@ class _TCardPageState extends State<TCardPage> {
                       child: FloatingActionButton(
                         backgroundColor: Colors.green.shade100,
                         onPressed: () {
-                          widget.fingerprintkeys.remove(widget.fingerPrint);
                           DBRef.child('"'+widget.fingerprintkeys[_index]+'"').set({
                             '"type"':'"제공자"',
                             '"currentLocation_x"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_x"],
@@ -322,6 +321,13 @@ class _TCardPageState extends State<TCardPage> {
                                 child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                                 onPressed: () {
                                   deleteData();
+                                  DBRef.child('"'+widget.fingerprintkeys[_index]+'"').set({
+                                    '"type"':'"제공자"',
+                                    '"currentLocation_x"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_x"],
+                                    '"currentLocation_y"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_y"],
+                                    '"futureLocation_x"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_x"],
+                                    '"futureLocation_y"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_y"],
+                                  });
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
                                 },
