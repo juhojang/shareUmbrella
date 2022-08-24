@@ -10,6 +10,7 @@ import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:location/location.dart';
+import 'package:untitled37/main.dart';
 
 
 late List<Marker> ProviderMarker=[];
@@ -51,6 +52,8 @@ class _TCardPageState extends State<TCardPage> {
 
   bool buttonTap=false;
 
+  bool noPerson=false;
+
   List<Marker> viewMarker=[];
 
 
@@ -63,6 +66,11 @@ class _TCardPageState extends State<TCardPage> {
     super.initState();
     print("bye");
     print(widget.valueMap);
+    if(fingerprintkeys.length==0)
+      {
+        print("noperson");
+        noPerson=true;
+      }
     for(int i=0;i<widget.fingerprintkeys.length;i++)
     {
       if(widget.fingerprintkeys[i]!=widget.fingerPrint)
@@ -109,7 +117,7 @@ class _TCardPageState extends State<TCardPage> {
             children: <Widget>[
               SizedBox(height: 120),
 
-              Center(
+              !noPerson?Center(
                 child: TCard(
                   size: Size(400, 200),
                   cards: List.generate(
@@ -181,9 +189,9 @@ class _TCardPageState extends State<TCardPage> {
                     print('end');
                   },
                 ),
-              ),
+              ):Container(),
               SizedBox(height: 20),
-              Center(
+              !noPerson?Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
@@ -237,10 +245,8 @@ class _TCardPageState extends State<TCardPage> {
                     Spacer(),
                   ],
                 ),
-              ),
-
+              ):Container(),
             ],
-
         ):Column(
             children: [
               Spacer(),

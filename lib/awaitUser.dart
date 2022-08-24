@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'chatPage.dart';
 
 class awaitUser extends StatefulWidget {
   String? fingerPrint;
@@ -63,11 +64,18 @@ class _awaitUserState extends State<awaitUser> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
-
-    timer=Timer.periodic(Duration(seconds: 5), (timer) {
+    if(!match)
+    {
+      timer=Timer.periodic(Duration(seconds: 5), (timer) {
       DBRef.once().then((DatabaseEvent dataSnapshot){
         String data=dataSnapshot.snapshot.value.toString();
         widget.valueMap=jsonDecode(data);
@@ -94,6 +102,11 @@ class _awaitUserState extends State<awaitUser> {
         }
       });
     });
+    }
+    if(match==true)
+    {
+      timer?.cancel();
+    }
     return Scaffold(
       body: !match?Column(
         children: [
@@ -124,10 +137,6 @@ class _awaitUserState extends State<awaitUser> {
             child: !match?Text("필요자에게 정당한 대가를 요구해보세요.\n 물론 공짜도 좋지만요 :)",style: TextStyle(fontSize: 17,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')):
             Text("",style: TextStyle(fontSize: 0,color: Colors.lightBlue)),),
           Spacer(),
-          match?OutlinedButton(
-              style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
-              onPressed:(){    timer?.cancel();},
-              child: Text("우산필요자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)):Container(),
           Spacer(),
           OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
@@ -173,7 +182,7 @@ class _awaitUserState extends State<awaitUser> {
           Spacer(),
           Container(
             width: 550,
-            height: 550,
+            height: 200,
             child: GoogleMap(
               initialCameraPosition: _initialPosition,
               mapType: MapType.normal,
@@ -204,7 +213,12 @@ class _awaitUserState extends State<awaitUser> {
           Spacer(),
           match?OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
-              onPressed:(){    timer?.cancel();},
+              onPressed:(){
+                timer?.cancel();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => chatting(userFingerprint,widget.fingerPrint!)));
+                  },
               child: Text("우산필요자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)):Container(),
           Spacer(),
           OutlinedButton(
