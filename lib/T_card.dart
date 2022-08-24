@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:location/location.dart';
 import 'package:untitled37/main.dart';
+import 'chatPage.dart';
 
 
 late List<Marker> ProviderMarker=[];
@@ -119,7 +120,7 @@ class _TCardPageState extends State<TCardPage> {
 
               !noPerson?Center(
                 child: TCard(
-                  size: Size(400, 200),
+                  size: Size(MediaQuery.of(context).size.width/1.1, MediaQuery.of(context).size.height/1.7),
                   cards: List.generate(
                     widget.markers.length~/2,
                         (int index) {
@@ -132,45 +133,50 @@ class _TCardPageState extends State<TCardPage> {
                         decoration: BoxDecoration(borderRadius: BorderRadius.circular(30),
                           color: Colors.lightBlue,),
                         alignment: Alignment.center,
-                        child: Column(
-                          children: [
-                            Spacer(),
-                            Text(
-                              '공유자 ${index + 1}',
-                              style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
+                        child: Center(
+                          child: Stack(
+                            children: [Column(
+                              children: [
+                                Spacer(),
+                                Text(
+                                  '공유자 ${index + 1}',
+                                  style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
+                                ),
+                                Spacer(),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: MediaQuery.of(context).size.height/2.7,
+                                  child: GoogleMap(
+                                    initialCameraPosition: _initialPosition,
+                                    mapType: MapType.normal,
+                                    myLocationEnabled: true,
+                                    myLocationButtonEnabled: true,
+                                    onMapCreated: (controller) {
+                                      setState(() {
+                                        mapController = controller;
+                                      });
+                                    },
+                                    onTap: (cordinate) {
+                                      mapController.animateCamera(CameraUpdate.newLatLng(cordinate));
+                                    },
+                                    markers:{widget.markers[0],widget.markers[2*index+1],widget.markers[2*index+2]},
+                                  ),
+                                ),
+                                Spacer(),
+                                Text(
+                                  '출발거리 차이: ${distance1.toStringAsFixed(3)} m',
+                                  style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
+                                ),
+                                Spacer(),
+                                Text(
+                                  '도착거리 차이: ${distance2.toStringAsFixed(3)} m',
+                                  style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
+                                ),
+                                Spacer(),
+                              ],
                             ),
-                            Spacer(),
-                            Container(
-                              width: 400,
-                              height: 400,
-                              child: GoogleMap(
-                                initialCameraPosition: _initialPosition,
-                                mapType: MapType.normal,
-                                myLocationEnabled: true,
-                                myLocationButtonEnabled: true,
-                                onMapCreated: (controller) {
-                                  setState(() {
-                                    mapController = controller;
-                                  });
-                                },
-                                onTap: (cordinate) {
-                                  mapController.animateCamera(CameraUpdate.newLatLng(cordinate));
-                                },
-                                markers:{widget.markers[0],widget.markers[2*index+1],widget.markers[2*index+2]},
-                              ),
-                            ),
-                            Spacer(),
-                            Text(
-                              '출발거리 차이: ${distance1.toStringAsFixed(3)} m',
-                              style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
-                            ),
-                            Spacer(),
-                            Text(
-                              '도착거리 차이: ${distance2.toStringAsFixed(3)} m',
-                              style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
-                            ),
-                            Spacer(),
-                          ],
+                            ]
+                          ),
                         ),
                       );
                     },
@@ -261,7 +267,11 @@ class _TCardPageState extends State<TCardPage> {
               Spacer(),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
-                  onPressed:(){},
+                  onPressed:(){
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => chatting(widget.fingerPrint!,widget.fingerprintkeys[_index])));
+                  },
                   child: Text("우산공유자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
               Spacer(),
               OutlinedButton(
@@ -269,7 +279,7 @@ class _TCardPageState extends State<TCardPage> {
                   onPressed:(){
                     showDialog(
                         context: context,
-                        barrierDismissible: true, // 바깥 영역 터치시 닫을지 여부
+                        barrierDismissible: true,
                         builder: (BuildContext context) {
                           return AlertDialog(
                             content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
