@@ -111,7 +111,7 @@ class _TCardPageState extends State<TCardPage> {
 
               Center(
                 child: TCard(
-                  size: Size(400, 600),
+                  size: Size(400, 200),
                   cards: List.generate(
                     widget.markers.length~/2,
                         (int index) {
@@ -250,13 +250,44 @@ class _TCardPageState extends State<TCardPage> {
               Spacer(),
               Spacer(),
               Center(
-                  child: Text("우산공유자에게 고마움에 대한 답례를 해보세요 :)",style: TextStyle(fontSize: 17,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')),
+                  child: Text("우산공유자에게 \n고마움에 대한 답례를 해보세요 :)",style: TextStyle(fontSize: 17,color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold')),
                 ),
               Spacer(),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
                   onPressed:(){},
                   child: Text("우산공유자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
+              Spacer(),
+              OutlinedButton(
+                  style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
+                  onPressed:(){
+                    showDialog(
+                        context: context,
+                        barrierDismissible: true, // 바깥 영역 터치시 닫을지 여부
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                            insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                            actions: [
+                              TextButton(
+                                child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              TextButton(
+                                child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        }
+                    );
+                  },
+                  child: Text("매칭취소",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
               Spacer(),
             ],
           ),
