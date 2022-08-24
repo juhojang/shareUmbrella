@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -39,6 +40,24 @@ class _awaitUserState extends State<awaitUser> {
 
   Timer? timer;
 
+  double distance1=0;
+
+  double distance2=0;
+
+  void deleteData() {
+    DBRef.child('"'+widget.fingerPrint!+'"').remove();
+  }
+
+
+  double Distance(double lat1,double lon1,double lat2,double lon2){
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 - c((lat2 - lat1) * p)/2 +
+        c(lat1 * p) * c(lat2 * p) *
+            (1 - c((lon2 - lon1) * p))/2;
+    return 12742 * asin(sqrt(a))*1000;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +85,11 @@ class _awaitUserState extends State<awaitUser> {
           print(userFingerprint);
           setState(() {
             match=true;
+            distance1=Distance(widget.locationX!, widget.locationY!,
+                widget.markers[1].position.longitude,widget.markers[1].position.latitude);
+            print(distance1);
+            distance2=Distance(widget.markers[0].position.longitude, widget.markers[0].position.latitude,
+                widget.markers[2].position.longitude,widget.markers[2].position.latitude);
           });
         }
       });
@@ -120,6 +144,7 @@ class _awaitUserState extends State<awaitUser> {
                             child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
                             onPressed: () {
                               timer?.cancel();
+                              deleteData();
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
                             },
@@ -166,6 +191,17 @@ class _awaitUserState extends State<awaitUser> {
             ),
           ),
           Spacer(),
+          Text(
+            '출발거리 차이: ${distance1.toStringAsFixed(3)} m',
+            style: TextStyle(fontSize: 20.0, color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold'),
+          ),
+          Spacer(),
+          Text(
+            '도착거리 차이: ${distance2.toStringAsFixed(3)} m',
+            style: TextStyle(fontSize: 20.0, color: Colors.lightBlue,fontFamily: 'Galmuri11-Bold'),
+          ),
+          Spacer(),
+          Spacer(),
           match?OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
               onPressed:(){    timer?.cancel();},
@@ -173,8 +209,34 @@ class _awaitUserState extends State<awaitUser> {
           Spacer(),
           OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
-              onPressed:(){    timer?.cancel();},
-              child: Text("등록취소",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
+              onPressed:(){                showDialog(
+                  context: context,
+                  barrierDismissible: true, // 바깥 영역 터치시 닫을지 여부
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                      insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                      actions: [
+                        TextButton(
+                          child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                          onPressed: () {
+                            timer?.cancel();
+                            deleteData();
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  }
+              );},
+              child: Text("매칭취소",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
           Spacer(),
 
         ],
