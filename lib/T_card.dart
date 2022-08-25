@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:convert';
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tcard/tcard.dart';
@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:location/location.dart';
 import 'package:untitled37/main.dart';
+import 'chatPage.dart';
 
 
 late List<Marker> ProviderMarker=[];
@@ -55,6 +56,10 @@ class _TCardPageState extends State<TCardPage> {
   bool noPerson=false;
 
   List<Marker> viewMarker=[];
+
+  void deleteData() {
+    DBRef.child('"'+widget.fingerPrint!+'"').remove();
+  }
 
 
   late CameraPosition _initialPosition = CameraPosition(target: LatLng(widget.locationY!,widget.locationX!),zoom: 15);
@@ -119,7 +124,7 @@ class _TCardPageState extends State<TCardPage> {
 
               !noPerson?Center(
                 child: TCard(
-                  size: Size(400, 200),
+                  size: Size(MediaQuery.of(context).size.width/1.1, MediaQuery.of(context).size.height/1.7),
                   cards: List.generate(
                     widget.markers.length~/2,
                         (int index) {
@@ -132,45 +137,50 @@ class _TCardPageState extends State<TCardPage> {
                         decoration: BoxDecoration(borderRadius: BorderRadius.circular(30),
                           color: Colors.lightBlue,),
                         alignment: Alignment.center,
-                        child: Column(
-                          children: [
-                            Spacer(),
-                            Text(
-                              '공유자 ${index + 1}',
-                              style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
+                        child: Center(
+                          child: Stack(
+                            children: [Column(
+                              children: [
+                                Spacer(),
+                                Text(
+                                  '공유자 ${index + 1}',
+                                  style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
+                                ),
+                                Spacer(),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: MediaQuery.of(context).size.height/2.7,
+                                  child: GoogleMap(
+                                    initialCameraPosition: _initialPosition,
+                                    mapType: MapType.normal,
+                                    myLocationEnabled: true,
+                                    myLocationButtonEnabled: true,
+                                    onMapCreated: (controller) {
+                                      setState(() {
+                                        mapController = controller;
+                                      });
+                                    },
+                                    onTap: (cordinate) {
+                                      mapController.animateCamera(CameraUpdate.newLatLng(cordinate));
+                                    },
+                                    markers:{widget.markers[0],widget.markers[2*index+1],widget.markers[2*index+2]},
+                                  ),
+                                ),
+                                Spacer(),
+                                Text(
+                                  '출발거리 차이: ${distance1.toStringAsFixed(3)} m',
+                                  style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
+                                ),
+                                Spacer(),
+                                Text(
+                                  '도착거리 차이: ${distance2.toStringAsFixed(3)} m',
+                                  style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
+                                ),
+                                Spacer(),
+                              ],
                             ),
-                            Spacer(),
-                            Container(
-                              width: 400,
-                              height: 400,
-                              child: GoogleMap(
-                                initialCameraPosition: _initialPosition,
-                                mapType: MapType.normal,
-                                myLocationEnabled: true,
-                                myLocationButtonEnabled: true,
-                                onMapCreated: (controller) {
-                                  setState(() {
-                                    mapController = controller;
-                                  });
-                                },
-                                onTap: (cordinate) {
-                                  mapController.animateCamera(CameraUpdate.newLatLng(cordinate));
-                                },
-                                markers:{widget.markers[0],widget.markers[2*index+1],widget.markers[2*index+2]},
-                              ),
-                            ),
-                            Spacer(),
-                            Text(
-                              '출발거리 차이: ${distance1.toStringAsFixed(3)} m',
-                              style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
-                            ),
-                            Spacer(),
-                            Text(
-                              '도착거리 차이: ${distance2.toStringAsFixed(3)} m',
-                              style: TextStyle(fontSize: 20.0, color: Colors.white,fontFamily: 'Galmuri11-Bold'),
-                            ),
-                            Spacer(),
-                          ],
+                            ]
+                          ),
                         ),
                       );
                     },
@@ -214,7 +224,6 @@ class _TCardPageState extends State<TCardPage> {
                       child: FloatingActionButton(
                         backgroundColor: Colors.green.shade100,
                         onPressed: () {
-                          widget.fingerprintkeys.remove(widget.fingerPrint);
                           DBRef.child('"'+widget.fingerprintkeys[_index]+'"').set({
                             '"type"':'"제공자"',
                             '"currentLocation_x"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_x"],
@@ -261,29 +270,76 @@ class _TCardPageState extends State<TCardPage> {
               Spacer(),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
-                  onPressed:(){},
+                  onPressed:(){
+                    DBRef.once().then((DatabaseEvent dataSnapshot){
+                      String data=dataSnapshot.snapshot.value.toString();
+                      valueMap=jsonDecode(data);
+                      List<dynamic> currentfingerprintkeys=valueMap.keys.toList();
+                      if(currentfingerprintkeys.contains(widget.fingerprintkeys[_index]))
+                        {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => chatting(widget.fingerPrint!,widget.fingerprintkeys[_index],widget.fingerPrint!)));
+                        }
+                      else{
+                        showDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                content: Text("상대방이 매칭을 취소했습니다.\n 전 화면으로 돌아갑니다.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.deepOrange),),
+                                insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
+                                    onPressed: () async{
+                                      var collection = FirebaseFirestore.instance.collection(widget.fingerPrint!+widget.fingerprintkeys[_index]);
+                                      var snapshots = await collection.get();
+                                      for (var doc in snapshots.docs) {
+                                        await doc.reference.delete();
+                                      }
+                                      deleteData();
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            }
+                        );
+                      }
+                    });
+                  },
                   child: Text("우산공유자와 대화",style: TextStyle(color: Colors.white,fontSize: 20,fontFamily: 'Galmuri11-Bold'),)),
               Spacer(),
               OutlinedButton(
-                  style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
+                  style: OutlinedButton.styleFrom(backgroundColor:Colors.deepOrange, side: BorderSide(width:5.0,color: Colors.deepOrange)),
                   onPressed:(){
                     showDialog(
                         context: context,
-                        barrierDismissible: true, // 바깥 영역 터치시 닫을지 여부
+                        barrierDismissible: true,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                            content: Text("주의\n\n정말로 취소하시겠어요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.deepOrange),),
                             insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
                             actions: [
                               TextButton(
-                                child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                                 onPressed: () {
+                                  deleteData();
+                                  DBRef.child('"'+widget.fingerprintkeys[_index]+'"').set({
+                                    '"type"':'"제공자"',
+                                    '"currentLocation_x"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_x"],
+                                    '"currentLocation_y"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_y"],
+                                    '"futureLocation_x"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_x"],
+                                    '"futureLocation_y"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_y"],
+                                  });
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
                                 },
                               ),
                               TextButton(
-                                child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },

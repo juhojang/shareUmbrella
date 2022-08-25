@@ -12,6 +12,7 @@ import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'awaitUser.dart';
 import 'T_card.dart';
+import 'chatPage.dart';
 
 
 bool buttonTap=false;
@@ -173,8 +174,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Spacer(),
             buttonTap?Container(
-              width: 550,
-              height: 550,
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height/1.6,
               child: GoogleMap(
                 initialCameraPosition: _initialPosition,
                 mapType: MapType.normal,
@@ -230,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
           markers.length==1?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),
             child: Padding(
-              padding: EdgeInsets.fromLTRB(170,180,0, 0),
+              padding: EdgeInsets.fromLTRB(170,MediaQuery.of(context).size.height/4.7,0, 0),
               child: OutlinedButton( onPressed: () {
                 userbuttonTap?writeDataforUser(markers[0].position):writeDataforProvider(markers[0].position);
                 DBRef.once().then((DatabaseEvent dataSnapshot){
@@ -278,14 +279,12 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ):AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),
             child: Padding(
-              padding: EdgeInsets.fromLTRB(170,180,0, 0),
+              padding: EdgeInsets.fromLTRB(170,MediaQuery.of(context).size.height/4.7,0, 0),
               child: OutlinedButton( onPressed: () { }, child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white,fontFamily: 'Galmuri11-Bold')),style: OutlinedButton.styleFrom(side: BorderSide(width: 3.0,color: Colors.white)), ),
             ),
           )
         ]
       ),
-
-      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
