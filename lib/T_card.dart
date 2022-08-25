@@ -135,7 +135,7 @@ class _TCardPageState extends State<TCardPage> {
                               widget.markers[2*index+2].position.longitude,widget.markers[2*index+2].position.latitude);
                       return Container(
                         decoration: BoxDecoration(borderRadius: BorderRadius.circular(30),
-                          color: Colors.lightBlue,),
+                          color: Color.fromARGB(255, Random().nextInt(256), Random().nextInt(256), Random().nextInt(256)),),
                         alignment: Alignment.center,
                         child: Center(
                           child: Stack(
