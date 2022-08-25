@@ -224,16 +224,45 @@ class _TCardPageState extends State<TCardPage> {
                       child: FloatingActionButton(
                         backgroundColor: Colors.green.shade100,
                         onPressed: () {
-                          DBRef.child('"'+widget.fingerprintkeys[_index]+'"').set({
-                            '"type"':'"제공자"',
-                            '"currentLocation_x"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_x"],
-                            '"currentLocation_y"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_y"],
-                            '"futureLocation_x"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_x"],
-                            '"futureLocation_y"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_y"],
-                            '"selected"' : '"'+widget.fingerPrint!+'"'
-                          });
-                          setState(() {
-                            buttonTap=true;
+                          DBRef.once().then((DatabaseEvent dataSnapshot){
+                            String data=dataSnapshot.snapshot.value.toString();
+                            widget.valueMap=jsonDecode(data);
+                            Map newMap=widget.valueMap[widget.fingerprintkeys[_index]];
+                            print(newMap.length);
+                            if(newMap.length==6)
+                            {
+                              showDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      content: Text("이미 다른사람과 매칭된 공유자입니다.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                                      insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                                      actions: [
+                                        TextButton(
+                                          child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  }
+                              );
+                            }
+                            else{
+                              DBRef.child('"'+widget.fingerprintkeys[_index]+'"').set({
+                                '"type"':'"제공자"',
+                                '"currentLocation_x"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_x"],
+                                '"currentLocation_y"': widget.valueMap[widget.fingerprintkeys[_index]]["currentLocation_y"],
+                                '"futureLocation_x"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_x"],
+                                '"futureLocation_y"' : widget.valueMap[widget.fingerprintkeys[_index]]["futureLocation_y"],
+                                '"selected"' : '"'+widget.fingerPrint!+'"'
+                              });
+                              setState(() {
+                                buttonTap=true;
+                              });
+                            }
                           });
                         },
                         child: Icon(Icons.check,size: 70,color: Colors.green,),
