@@ -9,6 +9,7 @@ class chatting extends StatefulWidget {
   String fingerPrintProvider="";
   String myFingerPrint="";
 
+
   chatting(this.fingerPrintUser,this.fingerPrintProvider,this.myFingerPrint);
 
   @override
@@ -18,6 +19,8 @@ class chatting extends StatefulWidget {
 class _chattingState extends State<chatting> {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+  ScrollController _scrollController = new ScrollController();
+
   final myController = TextEditingController();
 
   final DBRef=FirebaseDatabase.instance.reference();
@@ -26,11 +29,31 @@ class _chattingState extends State<chatting> {
     DBRef.child('"'+widget.myFingerPrint+'"').remove();
   }
 
+  List<String> myText=[];
+
+  Widget Listview_builder(){
+    return ListView.builder(
+        controller: _scrollController,
+        padding: EdgeInsets.only(top: 10),
+      scrollDirection: Axis.vertical,
+        itemCount: myText.length,
+        itemBuilder:(BuildContext context,int index){
+          return Bubble(
+            margin: BubbleEdges.only(top: 10,right: 10,bottom: 10),
+            elevation: 1,
+            alignment: Alignment.topRight,
+            nip: BubbleNip.rightTop,
+            color: Colors.lightBlue.shade200,
+            child: Text('${myText[index]}',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: Colors.white),),
+          );
+        }
+    );
+  }
+
 
   @override
   void initState() {
     super.initState();
-    firestore.collection(widget.fingerPrintUser+widget.fingerPrintProvider).add({'name':"your name", "id":"your id"});
   }
 
 
@@ -131,10 +154,10 @@ class _chattingState extends State<chatting> {
                   onPressed:() {
                     showDialog(
                         context: context,
-                        barrierDismissible: true, // 바깥 영역 터치시 닫을지 여부
+                        barrierDismissible: true,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            content: Text("주의\n\n정말로 도챡하셨나요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
+                            content: Text("주의\n\n정말로 도착하셨나요?",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.lightBlue),),
                             insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
                             actions: [
                               TextButton(
@@ -167,73 +190,53 @@ class _chattingState extends State<chatting> {
             ],
           )
         ),
-        Bubble(
-          margin: BubbleEdges.only(top: 20,left: 10,bottom: 10),
-          elevation: 1,
-          alignment: Alignment.topLeft,
-          nip: BubbleNip.leftTop,
-          child: Text('안녕하세요',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23),),
-        ),
-        Bubble(
-          margin: BubbleEdges.only(top: 10,right: 10,bottom: 10),
-          elevation: 1,
-          alignment: Alignment.topRight,
-          nip: BubbleNip.rightTop,
-          color: Colors.lightBlue.shade200,
-          child: Text('안녕하세요',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: Colors.white),),
-        ),
-        Bubble(
-          margin: BubbleEdges.only(top: 10,left: 10,bottom: 10),
-          elevation: 1,
-          alignment: Alignment.topLeft,
-          nip: BubbleNip.leftTop,
-          child: Text('우산좀 빌려주세요.',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23),),
-        ),
-        Bubble(
-          margin: BubbleEdges.only(top: 10,right: 10),
-          elevation: 1,
-          alignment: Alignment.topRight,
-          nip: BubbleNip.rightTop,
-          color: Colors.lightBlue.shade200,
-          child: Text('커피한잔 사주시면 우산 빌려드릴게요',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: Colors.white),),
-        ),
-        Spacer(),
-            Row(
-              children: [
-                Flexible(
-                  child: TextField(
-                      controller: myController,
-                      decoration: InputDecoration(
-                        hintStyle: TextStyle(fontFamily:'Galmuri11-Bold',color: Colors.lightBlue.shade200),
-                        hintText: ' 대화입력',
-                      )
+        Expanded(child: Listview_builder()),
+            Container(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: TextField(
+                        controller: myController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.transparent,
+                          hintStyle: TextStyle(fontFamily:'Galmuri11-Bold',color: Colors.lightBlue.shade200),
+                          hintText: ' 대화입력',
+                        )
+                    ),
                   ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.white,
-                      ),
-                      borderRadius: BorderRadius.circular(8.0),
-                      color: Colors.lightBlue[200],
-                    ),
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 4.0,
-                    ),
+                  GestureDetector(
+                    onTap: () {
+                      myText.add(myController.text);
+                      myController.clear();
+                      firestore.collection(widget.fingerPrintUser+widget.fingerPrintProvider).add({'name':widget.myFingerPrint, "text":myText.last,"time":DateTime.now()});
+                      _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
+                      setState(() {
+                      });
+                    },
                     child: Container(
-                      height: 40,
-                      width: 60,
-                      alignment: Alignment.center,
-                      child: Text(
-                        '보내기',style: TextStyle(fontFamily: 'Galmuri11-Bold',color: Colors.white),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.lightBlue.shade200,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: Colors.lightBlue[200],
+                      ),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 4.0,
+                      ),
+                      child: Container(
+                        height: 40,
+                        width: 60,
+                        alignment: Alignment.center,
+                        child: Text(
+                          '보내기',style: TextStyle(fontFamily: 'Galmuri11-Bold',color: Colors.white),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
       ]
     ),
