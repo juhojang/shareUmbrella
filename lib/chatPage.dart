@@ -252,20 +252,14 @@ class _chattingState extends State<chatting> {
                       crossAxisAlignment: widget.myFingerPrint==snapshot.data!.docs[index]['name']?CrossAxisAlignment.end:CrossAxisAlignment.start,
                       children: [
                         Text(snapshot.data!.docs[index]['simpleTime'],style: TextStyle(fontFamily: 'Galmuri14'),),
-                        Row(
-                          mainAxisAlignment: widget.myFingerPrint==snapshot.data!.docs[index]['name']?MainAxisAlignment.end:MainAxisAlignment.start,
-                          children: [
-                              Bubble(
-                              margin: BubbleEdges.only(top: 10,right: 10,bottom: 10,left:10),
-                              elevation: 1,
-                              alignment: Alignment.topRight,
-                              nip: widget.myFingerPrint==snapshot.data!.docs[index]['name']?BubbleNip.rightTop:BubbleNip.leftTop,
-                              color: widget.myFingerPrint==snapshot.data!.docs[index]['name']?Colors.lightBlue.shade200:Colors.white,
-                              child: Text(snapshot.data!.docs[index]['text'],style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: widget.myFingerPrint==snapshot.data!.docs[index]['name']
-                                  ?Colors.white:Colors.lightBlue.shade200),),
+                        Bubble(
+                                margin: BubbleEdges.only(top: 10,right: 10,bottom: 10,left:10),
+                                elevation: 1,
+                                nip: widget.myFingerPrint==snapshot.data!.docs[index]['name']?BubbleNip.rightTop:BubbleNip.leftTop,
+                                color: widget.myFingerPrint==snapshot.data!.docs[index]['name']?Colors.lightBlue.shade200:Colors.white,
+                                child: Text(snapshot.data!.docs[index]['text'],style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: widget.myFingerPrint==snapshot.data!.docs[index]['name']
+                                    ?Colors.white:Colors.lightBlue.shade200),),
                             ),
-                          ],
-                        ),
                       ],
                     );
                   }),
