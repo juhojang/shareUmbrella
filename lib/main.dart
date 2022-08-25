@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -232,46 +233,81 @@ class _MyHomePageState extends State<MyHomePage> {
           markers.length==1?AnimatedOpacity(opacity: 1,duration: Duration(seconds: 1),
             child: Padding(
               padding: EdgeInsets.fromLTRB(170,MediaQuery.of(context).size.height/4.7,0, 0),
-              child: OutlinedButton( onPressed: () {
-                userbuttonTap?writeDataforUser(markers[0].position):writeDataforProvider(markers[0].position);
-                DBRef.once().then((DatabaseEvent dataSnapshot){
-                  String data=dataSnapshot.snapshot.value.toString();
-                  valueMap=jsonDecode(data);
-                  fingerprintkeys=valueMap.keys.toList();
-                  if(userbuttonTap==true)
+              child: OutlinedButton( onPressed: () async{
+                bool bannedUser=false;
+                var collection_ban = FirebaseFirestore.instance.collection("bannedUser");
+                var snapshots_ban = await collection_ban.get();
+                for (var doc in snapshots_ban.docs) {
+                  var banneduser= await doc.reference.get();
+                  if(_fingerPrint?.replaceAll('"', '')==banneduser["fingerPrint"])
                   {
-                    for(int i=0;i<fingerprintkeys.length;i++)
-                          {
-                            if(valueMap[fingerprintkeys[i]]["type"]=="사용자")
-                            {
-                              valueMap.remove(fingerprintkeys[i]);
-                              fingerprintkeys.remove(fingerprintkeys[i]);
-                              i=i-1;
-                              print("remove");
-                            }
-                          }
-                    for(int i=0;i<fingerprintkeys.length;i++)
-                    {
-                      print(fingerprintkeys[i]);
-                      if(valueMap[fingerprintkeys[i]]["selected"]!=null)
-                      {
-                        valueMap.remove(fingerprintkeys[i]);
-                        fingerprintkeys.remove(fingerprintkeys[i]);
-                        i=i-1;
-                        print("erase");
+                    bannedUser=true;
+                  }
+                }
+                if(bannedUser==false) {
+                  userbuttonTap
+                      ? writeDataforUser(markers[0].position)
+                      : writeDataforProvider(markers[0].position);
+                  DBRef.once().then((DatabaseEvent dataSnapshot) {
+                    String data = dataSnapshot.snapshot.value.toString();
+                    valueMap = jsonDecode(data);
+                    fingerprintkeys = valueMap.keys.toList();
+                    if (userbuttonTap == true) {
+                      for (int i = 0; i < fingerprintkeys.length; i++) {
+                        if (valueMap[fingerprintkeys[i]]["type"] == "사용자") {
+                          valueMap.remove(fingerprintkeys[i]);
+                          fingerprintkeys.remove(fingerprintkeys[i]);
+                          i = i - 1;
+                          print("remove");
+                        }
+                      }
+                      for (int i = 0; i < fingerprintkeys.length; i++) {
+                        print(fingerprintkeys[i]);
+                        if (valueMap[fingerprintkeys[i]]["selected"] != null) {
+                          valueMap.remove(fingerprintkeys[i]);
+                          fingerprintkeys.remove(fingerprintkeys[i]);
+                          i = i - 1;
+                          print("erase");
+                        }
                       }
                     }
-                  }
-                  print(fingerprintkeys);
-                  userbuttonTap?Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TCardPage(_fingerPrint?.replaceAll('"', ''), locationData?.longitude, locationData?.latitude,markers,fingerprintkeys,valueMap)),
-                  ):
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => awaitUser(_fingerPrint?.replaceAll('"', ''), locationData?.longitude, locationData?.latitude,markers,fingerprintkeys,valueMap)),
+                    print(fingerprintkeys);
+                    userbuttonTap ? Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          TCardPage(_fingerPrint?.replaceAll('"', ''),
+                              locationData?.longitude, locationData?.latitude,
+                              markers, fingerprintkeys, valueMap)),
+                    ) :
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>
+                          awaitUser(_fingerPrint?.replaceAll('"', ''),
+                              locationData?.longitude, locationData?.latitude,
+                              markers, fingerprintkeys, valueMap)),
+                    );
+                  });
+                }
+                else{
+                  showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Text("당신은 밴유저입니다.\n\n2019037038로 문의주십시오.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.red),),
+                          insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                          actions: [
+                            TextButton(
+                              child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.red),),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      }
                   );
-                });
+                }
 
                 },
                 child: Text("선택완료",style: TextStyle(fontSize: 20,color: Colors.white,fontFamily: 'Galmuri11-Bold')),
