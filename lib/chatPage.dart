@@ -39,6 +39,8 @@ class _chattingState extends State<chatting> {
 
   List<dynamic> timeList=[];
 
+
+
   Widget Listview_builder(){
     return ListView.builder(
         controller: _scrollController,
@@ -68,11 +70,19 @@ class _chattingState extends State<chatting> {
   @override
   void initState() {
     super.initState();
+    CollectionReference reference = FirebaseFirestore.instance.collection('planets');
+    reference.snapshots().listen((querySnapshot) {
+      querySnapshot.docChanges.forEach((change) {
+        // Do something with change
+      });
+    });
   }
 
 
   @override
   Widget build(BuildContext context) {
+    print(myText);
+    print('test!!');
     return Scaffold(
       body : Column(
       children: [
@@ -112,7 +122,6 @@ class _chattingState extends State<chatting> {
                                 TextButton(
                                   child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.red),),
                                   onPressed: () {
-                                    firestore.collection('chat').doc("chatDetail").delete();
                                     Navigator.of(context).pop();
                                   },
                                 ),
@@ -219,7 +228,44 @@ class _chattingState extends State<chatting> {
             ],
           )
         ),
-        Expanded(child: Listview_builder()),
+
+            StreamBuilder<QuerySnapshot>(
+              stream:  FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider).orderBy('time').snapshots(),
+                builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+
+                if(snapshot.connectionState==ConnectionState.waiting)
+                  {
+                    return CircularProgressIndicator();
+                  }
+
+                return Expanded(
+                  child: ListView.builder(
+                      controller: _scrollController,
+                      padding: EdgeInsets.only(top: 10),
+                      itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (BuildContext context,index){
+                    return Column(
+                      mainAxisAlignment: widget.myFingerPrint==snapshot.data!.docs[index]['name']?MainAxisAlignment.end:MainAxisAlignment.start,
+                      children: [
+                        Text(snapshot.data!.docs[index]['simpleTime'],style: TextStyle(fontFamily: 'Galmuri14'),),
+                          Bubble(
+                          margin: BubbleEdges.only(top: 10,right: 10,bottom: 10,left:10),
+                          elevation: 1,
+                          alignment: Alignment.topRight,
+                          nip: widget.myFingerPrint==snapshot.data!.docs[index]['name']?BubbleNip.rightTop:BubbleNip.leftTop,
+                          color: widget.myFingerPrint==snapshot.data!.docs[index]['name']?Colors.lightBlue.shade200:Colors.white,
+                          child: Text(snapshot.data!.docs[index]['text'],style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: widget.myFingerPrint==snapshot.data!.docs[index]['name']
+                              ?Colors.white:Colors.lightBlue.shade200),),
+                        ),
+                      ],
+                    );
+                  }),
+                );
+
+                return Expanded(child: Listview_builder());
+                }
+            ),
+
             Container(
               child: Row(
                 children: [
@@ -245,7 +291,11 @@ class _chattingState extends State<chatting> {
                           myText.add(myController.text);
                           myController.clear();
                           timeList.add(DateTime.now().hour.toString()+':'+DateTime.now().minute.toString()+':'+DateTime.now().second.toString());
-                          firestore.collection(widget.fingerPrintUser+widget.fingerPrintProvider).add({'name':widget.myFingerPrint, "text":myText.last,"time":DateTime.now()});
+                          firestore.collection(widget.fingerPrintUser+widget.fingerPrintProvider).add({
+                            'name':widget.myFingerPrint,
+                            "text":myText.last,
+                            "time":DateTime.now(),
+                            "simpleTime":DateTime.now().hour.toString()+':'+DateTime.now().minute.toString()+':'+DateTime.now().second.toString()});
                           _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
                           setState(() {
                           });
