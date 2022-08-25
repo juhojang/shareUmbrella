@@ -57,6 +57,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  double currentLocationDif=100.0;
+  double futureLocationDif=100.0;
+
   LocationData? locationData;
 
   late GoogleMapController _controller;
@@ -210,6 +213,47 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     child: !userbuttonTap?Icon(Icons.person_outlined,color: Colors.lightBlue,size: 50,):Icon(Icons.cancel_outlined,size: 50),
                   ):Container(),
+                  Spacer(),
+                  buttonTap?Column(
+                    children: [
+                      Text("최대 현재위치 차이",style: TextStyle(fontFamily: 'Galmuri14',color: Colors.white),),
+                      Container(
+                        width: 150,
+                        child: Slider(
+                            activeColor: Colors.white,
+                            inactiveColor: Colors.lightBlue,
+                            thumbColor: Colors.white,
+                            value: currentLocationDif,
+                            max:1000.0,divisions:10,
+                            label: currentLocationDif.round().toString()+'m',
+                            onChanged: (double value){
+                              setState(() {
+                                currentLocationDif=value;
+                              });}),
+                      )
+                    ],
+                  ):Spacer(),
+                  Spacer(),
+                  buttonTap?Column(
+                    children: [
+                      Text("최대 도착위치 차이",style: TextStyle(fontFamily: 'Galmuri14',color: Colors.white),),
+                      Container(
+                        width: 150,
+                        child: Slider(
+                            activeColor: Colors.white,
+                            inactiveColor: Colors.lightBlue,
+                            thumbColor: Colors.white,
+                            value: futureLocationDif,
+                            max:1000.0,divisions:10,
+                            label: futureLocationDif.round().toString()+'m',
+                            onChanged: (double value){
+                              setState(() {
+                                futureLocationDif=value;
+                              });}),
+                      )
+                    ],
+                  ):Spacer(),
+                  Spacer(),
                   !userbuttonTap?FloatingActionButton(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
