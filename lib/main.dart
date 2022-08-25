@@ -223,7 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: !userbuttonTap?Icon(Icons.person_outlined,color: Colors.lightBlue,size: 50,):Icon(Icons.cancel_outlined,size: 50),
                   ):Container(),
                   Spacer(),
-                  buttonTap?Column(
+                  userbuttonTap?Column(
                     children: [
                       Text("최대 현재위치 차이",style: TextStyle(fontFamily: 'Galmuri14',color: Colors.white),),
                       Container(
@@ -243,7 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                   ):Spacer(),
                   Spacer(),
-                  buttonTap?Column(
+                  userbuttonTap?Column(
                     children: [
                       Text("최대 도착위치 차이",style: TextStyle(fontFamily: 'Galmuri14',color: Colors.white),),
                       Container(
