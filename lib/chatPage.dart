@@ -233,9 +233,14 @@ class _chattingState extends State<chatting> {
               stream:  FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider).orderBy('time').snapshots(),
                 builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
 
-                if(snapshot.connectionState==ConnectionState.waiting)
+                  if(snapshot.hasError)
                   {
                     return CircularProgressIndicator();
+                  }
+
+                if(snapshot.connectionState==ConnectionState.waiting)
+                  {
+                    _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
                   }
                 return Expanded(
                   child: ListView.builder(
@@ -355,15 +360,51 @@ class _chattingState extends State<chatting> {
                                     TextButton(
                                       child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                                       onPressed: () async{
-                                        var collection = FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider);
-                                        var snapshots = await collection.get();
-                                        for (var doc in snapshots.docs) {
-                                          await doc.reference.delete();
+                                        bool bannedUser=false;
+                                        var collection_ban = FirebaseFirestore.instance.collection("bannedUser");
+                                        var snapshots_ban = await collection_ban.get();
+                                        for (var doc in snapshots_ban.docs) {
+                                          var banneduser= await doc.reference.get();
+                                          if(widget.myFingerPrint==banneduser["fingerPrint"])
+                                            {
+                                              bannedUser=true;
+                                            }
                                         }
-                                        deleteData();
-                                        Navigator.of(context).pop();
-                                        Navigator.of(context).pop();
-                                        Navigator.of(context).pop();
+                                        if(bannedUser==false)
+                                        {
+                                          var collection = FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider);
+                                          var snapshots = await collection.get();
+                                          for (var doc in snapshots.docs) {
+                                            await doc.reference.delete();
+                                          }
+                                          deleteData();
+                                          Navigator.of(context).pop();
+                                          Navigator.of(context).pop();
+                                          Navigator.of(context).pop();
+                                        }
+                                        else{
+                                          showDialog(
+                                              context: context,
+                                              barrierDismissible: true,
+                                              builder: (BuildContext context) {
+                                                return AlertDialog(
+                                                  content: Text("당신은 밴유저입니다.\n\n2019037038로 문의주십시오.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.red),),
+                                                  insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                                                  actions: [
+                                                    TextButton(
+                                                      child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.red),),
+                                                      onPressed: () async{
+                                                        deleteData();
+                                                        Navigator.of(context).pop();
+                                                        Navigator.of(context).pop();
+                                                        Navigator.of(context).pop();
+                                                      },
+                                                    ),
+                                                  ],
+                                                );
+                                              }
+                                          );
+                                        }
                                       },
                                     ),
                                   ],
