@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bubble/bubble.dart';
 import 'package:firebase_database/firebase_database.dart';
+
+import 'main.dart';
 
 class chatting extends StatefulWidget {
 
@@ -29,7 +33,11 @@ class _chattingState extends State<chatting> {
     DBRef.child('"'+widget.myFingerPrint+'"').remove();
   }
 
+  int backedUser=0;
+
   List<String> myText=[];
+
+  List<dynamic> timeList=[];
 
   Widget Listview_builder(){
     return ListView.builder(
@@ -38,13 +46,19 @@ class _chattingState extends State<chatting> {
       scrollDirection: Axis.vertical,
         itemCount: myText.length,
         itemBuilder:(BuildContext context,int index){
-          return Bubble(
-            margin: BubbleEdges.only(top: 10,right: 10,bottom: 10),
-            elevation: 1,
-            alignment: Alignment.topRight,
-            nip: BubbleNip.rightTop,
-            color: Colors.lightBlue.shade200,
-            child: Text('${myText[index]}',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: Colors.white),),
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text("${timeList[index]}",style: TextStyle(fontFamily: 'Galmuri14'),),
+              Bubble(
+                margin: BubbleEdges.only(top: 10,right: 10,bottom: 10),
+                elevation: 1,
+                alignment: Alignment.topRight,
+                nip: BubbleNip.rightTop,
+                color: Colors.lightBlue.shade200,
+                child: Text('${myText[index]}',style: TextStyle(fontFamily: 'Galmuri14',fontSize: 23,color: Colors.white),),
+              ),
+            ],
           );
         }
     );
@@ -124,15 +138,30 @@ class _chattingState extends State<chatting> {
                               TextButton(
                                 child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
                                 onPressed: () async{
-                                  var collection = FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider);
-                                  var snapshots = await collection.get();
-                                  for (var doc in snapshots.docs) {
-                                    await doc.reference.delete();
-                                  }
-                                  deleteData();
-                                  Navigator.of(context).pop();
-                                  Navigator.of(context).pop();
-                                  Navigator.of(context).pop();
+                                  DBRef.once().then((DatabaseEvent dataSnapshot) async{
+                                    String data=dataSnapshot.snapshot.value.toString();
+                                    valueMap=jsonDecode(data);
+                                    List<dynamic> currentfingerprintkeys=valueMap.keys.toList();
+                                    if(currentfingerprintkeys.contains(widget.fingerPrintUser)&&currentfingerprintkeys.contains(widget.fingerPrintProvider))
+                                    {
+                                      deleteData();
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+                                    }
+                                    else {
+                                      var collection = FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider);
+                                      var snapshots = await collection.get();
+                                      for (var doc in snapshots.docs) {
+                                        await doc.reference.delete();
+                                      }
+                                      deleteData();
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).pop();
+
+                                    }
+                                  });
                                 },
                               ),
                               TextButton(
@@ -207,11 +236,87 @@ class _chattingState extends State<chatting> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      myText.add(myController.text);
-                      myController.clear();
-                      firestore.collection(widget.fingerPrintUser+widget.fingerPrintProvider).add({'name':widget.myFingerPrint, "text":myText.last,"time":DateTime.now()});
-                      _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
-                      setState(() {
+                      DBRef.once().then((DatabaseEvent dataSnapshot){
+                        String data=dataSnapshot.snapshot.value.toString();
+                        valueMap=jsonDecode(data);
+                        List<dynamic> currentfingerprintkeys=valueMap.keys.toList();
+                        if(currentfingerprintkeys.contains(widget.fingerPrintUser)&&currentfingerprintkeys.contains(widget.fingerPrintProvider))
+                        {
+                          myText.add(myController.text);
+                          myController.clear();
+                          timeList.add(DateTime.now().hour.toString()+':'+DateTime.now().minute.toString()+':'+DateTime.now().second.toString());
+                          firestore.collection(widget.fingerPrintUser+widget.fingerPrintProvider).add({'name':widget.myFingerPrint, "text":myText.last,"time":DateTime.now()});
+                          _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
+                          setState(() {
+                          });
+                        }
+                        else{
+                          showDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  content: Text("상대방이 매칭을 취소했습니다.\n 전 화면으로 돌아갑니다.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.deepOrange),),
+                                  insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                                  actions: [
+                                    TextButton(
+                                      child: const Text('신고',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.red),),
+                                      onPressed: () {
+                                        showDialog(
+                                            context: context,
+                                            barrierDismissible: true,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                content: Text("주의\n\n정말로 신고하시겠어요?\n신고하면 대화기록이 저장되고 상대방은 밴유저로 기록됩니다.",style: TextStyle(fontFamily:"Galmuri11-Bold",fontSize: 20,color: Colors.red),),
+                                                insetPadding: const  EdgeInsets.fromLTRB(0,80,0, 80),
+                                                actions: [
+                                                  TextButton(
+                                                    child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.red),),
+                                                    onPressed: () async{
+                                                      if(widget.fingerPrintProvider!=widget.myFingerPrint)
+                                                      {
+                                                        firestore.collection("bannedUser").add({"fingerPrint":widget.fingerPrintProvider});
+                                                      }
+                                                      else{
+                                                        firestore.collection("bannedUser").add({"fingerPrint":widget.fingerPrintUser});
+                                                      }
+                                                      deleteData();
+                                                      Navigator.of(context).pop();
+                                                      Navigator.of(context).pop();
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                  ),
+                                                  TextButton(
+                                                    child: const Text('취소',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.red),),
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                  ),
+                                                ],
+                                              );
+                                            }
+                                        );
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
+                                      onPressed: () async{
+                                        var collection = FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider);
+                                        var snapshots = await collection.get();
+                                        for (var doc in snapshots.docs) {
+                                          await doc.reference.delete();
+                                        }
+                                        deleteData();
+                                        Navigator.of(context).pop();
+                                        Navigator.of(context).pop();
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              }
+                          );
+                        }
                       });
                     },
                     child: Container(
