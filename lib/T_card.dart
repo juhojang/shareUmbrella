@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tcard/tcard.dart';
@@ -291,7 +292,12 @@ class _TCardPageState extends State<TCardPage> {
                                 actions: [
                                   TextButton(
                                     child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
-                                    onPressed: () {
+                                    onPressed: () async{
+                                      var collection = FirebaseFirestore.instance.collection(widget.fingerPrint!+widget.fingerprintkeys[_index]);
+                                      var snapshots = await collection.get();
+                                      for (var doc in snapshots.docs) {
+                                        await doc.reference.delete();
+                                      }
                                       deleteData();
                                       Navigator.of(context).pop();
                                       Navigator.of(context).pop();
