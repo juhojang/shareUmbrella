@@ -57,6 +57,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  double currentLocationDif=100.0;
+  double futureLocationDif=100.0;
+
   LocationData? locationData;
 
   late GoogleMapController _controller;
@@ -81,6 +84,15 @@ class _MyHomePageState extends State<MyHomePage> {
         markers.add(Marker(position: cordinate, markerId: MarkerId(id.toString())));
       }
     });
+  }
+
+  double Distance(double lat1,double lon1,double lat2,double lon2){
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 - c((lat2 - lat1) * p)/2 +
+        c(lat1 * p) * c(lat2 * p) *
+            (1 - c((lon2 - lon1) * p))/2;
+    return 12742 * asin(sqrt(a))*1000;
   }
 
 
@@ -210,6 +222,47 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     child: !userbuttonTap?Icon(Icons.person_outlined,color: Colors.lightBlue,size: 50,):Icon(Icons.cancel_outlined,size: 50),
                   ):Container(),
+                  Spacer(),
+                  userbuttonTap?Column(
+                    children: [
+                      Text("최대 현재위치 차이",style: TextStyle(fontFamily: 'Galmuri14',color: Colors.white),),
+                      Container(
+                        width: 150,
+                        child: Slider(
+                            activeColor: Colors.white,
+                            inactiveColor: Colors.lightBlue,
+                            thumbColor: Colors.white,
+                            value: currentLocationDif,
+                            max:1000.0,divisions:10,
+                            label: currentLocationDif.round().toString()+'m',
+                            onChanged: (double value){
+                              setState(() {
+                                currentLocationDif=value;
+                              });}),
+                      )
+                    ],
+                  ):Spacer(),
+                  Spacer(),
+                  userbuttonTap?Column(
+                    children: [
+                      Text("최대 도착위치 차이",style: TextStyle(fontFamily: 'Galmuri14',color: Colors.white),),
+                      Container(
+                        width: 150,
+                        child: Slider(
+                            activeColor: Colors.white,
+                            inactiveColor: Colors.lightBlue,
+                            thumbColor: Colors.white,
+                            value: futureLocationDif,
+                            max:1000.0,divisions:10,
+                            label: futureLocationDif.round().toString()+'m',
+                            onChanged: (double value){
+                              setState(() {
+                                futureLocationDif=value;
+                              });}),
+                      )
+                    ],
+                  ):Spacer(),
+                  Spacer(),
                   !userbuttonTap?FloatingActionButton(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
@@ -268,6 +321,26 @@ class _MyHomePageState extends State<MyHomePage> {
                           fingerprintkeys.remove(fingerprintkeys[i]);
                           i = i - 1;
                           print("erase");
+                        }
+                      }
+                      for (int i = 0; i < fingerprintkeys.length; i++) {
+                        double distanceCur=Distance(markers[0].position.latitude, markers[0].position.longitude,
+                            valueMap[fingerprintkeys[i]]["currentLocation_y"], valueMap[fingerprintkeys[i]]["currentLocation_x"]);
+                        if(distanceCur>currentLocationDif)
+                        {
+                          valueMap.remove(fingerprintkeys[i]);
+                          fingerprintkeys.remove(fingerprintkeys[i]);
+                          i = i - 1;
+                        }
+                      }
+                      for (int i = 0; i < fingerprintkeys.length; i++) {
+                        double distanceFut=Distance(markers[0].position.latitude, markers[0].position.longitude,
+                        valueMap[fingerprintkeys[i]]["futureLocation_y"], valueMap[fingerprintkeys[i]]["futureLocation_x"]);
+                        if(distanceFut>futureLocationDif)
+                        {
+                          valueMap.remove(fingerprintkeys[i]);
+                          fingerprintkeys.remove(fingerprintkeys[i]);
+                          i = i - 1;
                         }
                       }
                     }
