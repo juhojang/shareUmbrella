@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'chatPage.dart';
 import 'main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class awaitUser extends StatefulWidget {
   String? fingerPrint;
@@ -237,7 +238,12 @@ class _awaitUserState extends State<awaitUser> {
                             actions: [
                               TextButton(
                                 child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
-                                onPressed: () {
+                                onPressed: () async{
+                                  var collection = FirebaseFirestore.instance.collection(userFingerprint+widget.fingerPrint!);
+                                  var snapshots = await collection.get();
+                                  for (var doc in snapshots.docs) {
+                                    await doc.reference.delete();
+                                  }
                                   deleteData();
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
