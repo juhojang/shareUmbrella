@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:bubble/bubble.dart';
@@ -21,6 +22,9 @@ class chatting extends StatefulWidget {
 }
 
 class _chattingState extends State<chatting> {
+
+  late AdmobInterstitial interstitialAd;
+
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   ScrollController _scrollController = new ScrollController();
@@ -70,12 +74,13 @@ class _chattingState extends State<chatting> {
   @override
   void initState() {
     super.initState();
-    CollectionReference reference = FirebaseFirestore.instance.collection('planets');
-    reference.snapshots().listen((querySnapshot) {
-      querySnapshot.docChanges.forEach((change) {
-        // Do something with change
-      });
-    });
+    interstitialAd = AdmobInterstitial(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      listener: (AdmobAdEvent event, Map<String, dynamic>? args) {
+        if (event == AdmobAdEvent.closed) interstitialAd.load();
+      },
+    );
+    interstitialAd.load();
   }
 
 
@@ -201,6 +206,7 @@ class _chattingState extends State<chatting> {
                               TextButton(
                                 child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.lightBlue),),
                                 onPressed: () async{
+                                  interstitialAd.show();
                                   var collection = FirebaseFirestore.instance.collection(widget.fingerPrintUser+widget.fingerPrintProvider);
                                   var snapshots = await collection.get();
                                   for (var doc in snapshots.docs) {
