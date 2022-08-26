@@ -1,3 +1,4 @@
+
 import 'dart:io';
 import 'dart:math';
 import 'dart:convert';
@@ -11,6 +12,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:admob_flutter/admob_flutter.dart';
 import 'awaitUser.dart';
 import 'T_card.dart';
 import 'chatPage.dart';
@@ -24,6 +26,7 @@ Map valueMap={};
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  Admob.initialize();
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
@@ -56,6 +59,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  late AdmobInterstitial interstitialAd;
+
+  String admobBannerId='';
 
   double currentLocationDif=100.0;
   double futureLocationDif=100.0;
@@ -99,11 +106,19 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    interstitialAd = AdmobInterstitial(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      listener: (AdmobAdEvent event, Map<String, dynamic>? args) {
+        if (event == AdmobAdEvent.closed) interstitialAd.load();
+      },
+    );
+    admobBannerId='ca-app-pub-3940256099942544/6300978111';
     loadInfo();
     Firebase.initializeApp().whenComplete(() {
       print("completed");
       setState(() {});
     });
+    interstitialAd.load();
   }
 
 
@@ -150,10 +165,11 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ]
           ),
-          !buttonTap?AnimatedOpacity(opacity: 0.2,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,))
+          !buttonTap?AnimatedOpacity(opacity: 0.2,duration: Duration(seconds: 1),child: Container(child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,)))
               :AnimatedOpacity(opacity: 0,duration: Duration(seconds: 1),child: Image(image: AssetImage('assets/images/rainy.gif'),fit: BoxFit.cover,height: double.infinity,)),
           Column(
           children: [
+            !buttonTap?Container(child: AdmobBanner(adUnitId: admobBannerId, adSize: AdmobBannerSize.BANNER,onBannerCreated: (AdmobBannerController controller){})):Container(),
             Spacer(),
             !buttonTap?AnimatedOpacity(
               opacity: 1,
@@ -175,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
               duration: Duration(seconds: 1),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
-                child: Text("우산 같이쓰자!",style: TextStyle(fontSize: 31,fontFamily: 'Galmuri11-Bold',color: Colors.lightBlue),),
+                child: Text("같이 우산쓰자!",style: TextStyle(fontSize: 31,fontFamily: 'Galmuri11-Bold',color: Colors.lightBlue),),
               ),
             ):AnimatedOpacity(
               opacity: 0,
@@ -287,6 +303,11 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Padding(
               padding: EdgeInsets.fromLTRB(170,MediaQuery.of(context).size.height/4.7,0, 0),
               child: OutlinedButton( onPressed: () async{
+                if(userbuttonTap==true)
+                  {
+                    print('advertise');
+                    interstitialAd.show();
+                  }
                 bool bannedUser=false;
                 var collection_ban = FirebaseFirestore.instance.collection("bannedUser");
                 var snapshots_ban = await collection_ban.get();
