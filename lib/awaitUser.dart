@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
-
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'chatPage.dart';
 import 'main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,6 +31,8 @@ class awaitUser extends StatefulWidget {
 }
 
 class _awaitUserState extends State<awaitUser> {
+
+  late AdmobInterstitial interstitialAd;
 
   late GoogleMapController mapController;
 
@@ -64,6 +67,13 @@ class _awaitUserState extends State<awaitUser> {
   @override
   void initState() {
     super.initState();
+    interstitialAd = AdmobInterstitial(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      listener: (AdmobAdEvent event, Map<String, dynamic>? args) {
+        if (event == AdmobAdEvent.closed) interstitialAd.load();
+      },
+    );
+    interstitialAd.load();
   }
 
   @override
@@ -216,6 +226,7 @@ class _awaitUserState extends State<awaitUser> {
           match?OutlinedButton(
               style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
               onPressed:(){
+                interstitialAd.show();
                 timer?.cancel();
                 DBRef.once().then((DatabaseEvent dataSnapshot){
                   String data=dataSnapshot.snapshot.value.toString();
@@ -306,6 +317,7 @@ class _awaitUserState extends State<awaitUser> {
                         TextButton(
                           child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                           onPressed: () {
+                            interstitialAd.show();
                             timer?.cancel();
                             deleteData();
                             Navigator.of(context).pop();
