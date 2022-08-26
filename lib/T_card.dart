@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:location/location.dart';
 import 'package:untitled37/main.dart';
+import 'package:admob_flutter/admob_flutter.dart';
 import 'chatPage.dart';
 
 
@@ -44,6 +45,9 @@ class TCardPage extends StatefulWidget {
 
 class _TCardPageState extends State<TCardPage> {
 
+  late AdmobInterstitial interstitialAd;
+
+
 
   late GoogleMapController mapController;
 
@@ -71,6 +75,12 @@ class _TCardPageState extends State<TCardPage> {
     super.initState();
     print("bye");
     print(widget.valueMap);
+    interstitialAd = AdmobInterstitial(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712',
+      listener: (AdmobAdEvent event, Map<String, dynamic>? args) {
+        if (event == AdmobAdEvent.closed) interstitialAd.load();
+      },
+    );
     if(fingerprintkeys.length==0)
       {
         print("noperson");
@@ -87,6 +97,8 @@ class _TCardPageState extends State<TCardPage> {
             widget.valueMap[widget.fingerprintkeys[i]]["futureLocation_x"]), markerId: MarkerId(widget.fingerprintkeys[i]+"future"),icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue)));
       }
     }
+
+    interstitialAd.load();
   }
 
 
@@ -300,6 +312,7 @@ class _TCardPageState extends State<TCardPage> {
               OutlinedButton(
                 style: OutlinedButton.styleFrom(backgroundColor:Colors.lightBlue, side: BorderSide(width:5.0,color: Colors.lightBlue)),
                   onPressed:(){
+                  interstitialAd.show();
                     DBRef.once().then((DatabaseEvent dataSnapshot){
                       String data=dataSnapshot.snapshot.value.toString();
                       valueMap=jsonDecode(data);
@@ -389,6 +402,7 @@ class _TCardPageState extends State<TCardPage> {
                               TextButton(
                                 child: const Text('확인',style: TextStyle(fontFamily: "Galmuri11-Bold",color: Colors.deepOrange),),
                                 onPressed: () {
+                                  interstitialAd.show();
                                   deleteData();
                                   DBRef.child('"'+widget.fingerprintkeys[_index]+'"').set({
                                     '"type"':'"제공자"',
